@@ -26,6 +26,7 @@ export function GbairaiForm({ onSuccess }: GbairaiFormProps) {
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [customEmotion, setCustomEmotion] = useState<string>("");
   const [customEmotionDescription, setCustomEmotionDescription] = useState<string>("");
+  const [customEmoji, setCustomEmoji] = useState<string>("🎨");
   const [suggestedEmotions, setSuggestedEmotions] = useState<EmotionSuggestion[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(true);
@@ -70,9 +71,10 @@ export function GbairaiForm({ onSuccess }: GbairaiFormProps) {
     return () => clearTimeout(timeoutId);
   }, [content]);
 
-  const handleCustomEmotion = (emotion: string, description: string) => {
+  const handleCustomEmotion = (emotion: string, description: string, emoji: string) => {
     setCustomEmotion(emotion);
     setCustomEmotionDescription(description);
+    setCustomEmoji(emoji || "🎨");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,6 +115,7 @@ export function GbairaiForm({ onSuccess }: GbairaiFormProps) {
           suggestedEmotions,
           userSelected: selectedEmotion !== suggestedEmotions[0]?.emotion,
           customEmotionDescription: selectedEmotion === 'inclassable' ? customEmotionDescription : undefined,
+          customEmoji: selectedEmotion === 'inclassable' ? customEmoji : undefined,
         },
       });
 
@@ -129,6 +132,7 @@ export function GbairaiForm({ onSuccess }: GbairaiFormProps) {
       setSelectedEmotion(null);
       setCustomEmotion("");
       setCustomEmotionDescription("");
+      setCustomEmoji("🎨");
       setSuggestedEmotions([]);
       
       onSuccess?.();
@@ -201,6 +205,7 @@ export function GbairaiForm({ onSuccess }: GbairaiFormProps) {
               suggestions={suggestedEmotions}
               isAnalyzing={isAnalyzing}
               customEmotion={customEmotion}
+              customEmoji={customEmoji}
               onCustomEmotion={handleCustomEmotion}
             />
           </div>

@@ -367,6 +367,17 @@ export default function AuthPage() {
                     </button>
                   </div>
                 </form>
+                <div className="mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={() => { window.location.href = "/auth/google"; }}
+                  >
+                    <img src="/pics/google.webp" alt="Google" className="w-5 h-5 object-contain" />
+                    Continuer avec Google
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="register">
@@ -446,6 +457,16 @@ export default function AuthPage() {
                     )}
                   </Button>
                 </form>
+                <div className="mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => { window.location.href = "/auth/google"; }}
+                  >
+                    Continuer avec Google
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
             )}

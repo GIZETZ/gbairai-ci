@@ -132,7 +132,7 @@ export function GbairaiCardMobile({
     }
   }, [gbairai.interactions, user?.id]);
 
-  const emotion = getEmotionDisplay(gbairai.emotion);
+  const emotion = getEmotionDisplay(gbairai.emotion, (gbairai as any).metadata);
 
   const location = gbairai.location as any;
   const locationText = location ? `${location.city || location.region || 'Côte d\'Ivoire'}` : 'Côte d\'Ivoire';

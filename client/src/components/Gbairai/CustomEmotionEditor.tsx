@@ -6,22 +6,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Palette, Sparkles, Type } from "lucide-react";
+import { EmojiPicker } from "@/components/Common/EmojiPicker";
 
 interface CustomEmotionEditorProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (emotion: string, description: string) => void;
+  onSave: (emotion: string, description: string, emoji: string) => void;
 }
 
 export function CustomEmotionEditor({ isOpen, onClose, onSave }: CustomEmotionEditorProps) {
   const [emotion, setEmotion] = useState("");
   const [description, setDescription] = useState("");
+  const [emoji, setEmoji] = useState<string>("🎨");
 
   const handleSave = () => {
     if (emotion.trim() && description.trim()) {
-      onSave(emotion.trim(), description.trim());
+      onSave(emotion.trim(), description.trim(), emoji);
       setEmotion("");
       setDescription("");
+      setEmoji("🎨");
       onClose();
     }
   };
@@ -29,6 +32,7 @@ export function CustomEmotionEditor({ isOpen, onClose, onSave }: CustomEmotionEd
   const handleClose = () => {
     setEmotion("");
     setDescription("");
+    setEmoji("🎨");
     onClose();
   };
 
@@ -49,6 +53,16 @@ export function CustomEmotionEditor({ isOpen, onClose, onSave }: CustomEmotionEd
         </DialogHeader>
         
         <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">Choisir un émoji</Label>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-xl">
+                {emoji}
+              </div>
+              <EmojiPicker onEmojiSelect={setEmoji} />
+            </div>
+          </div>
+
           <Card className="border-orange-200 bg-orange-50">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm text-orange-800">

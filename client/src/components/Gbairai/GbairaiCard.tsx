@@ -42,10 +42,11 @@ export const emotionConfig = {
   "inclassable": { emoji: "🎨", color: "bg-orange-100", label: "Inclassable" },
 };
 
-export const getEmotionDisplay = (emotion: string) => {
+export const getEmotionDisplay = (emotion: string, metadata?: any) => {
   if (emotion.startsWith('custom:')) {
     const customEmotion = emotion.replace('custom:', '');
-    return { emoji: "🎨", color: "bg-orange-100", label: customEmotion };
+    const customEmoji = metadata?.customEmoji || "🎨";
+    return { emoji: customEmoji, color: "bg-orange-100", label: customEmotion };
   }
   return emotionConfig[emotion as keyof typeof emotionConfig] || emotionConfig.inclassable;
 };
@@ -56,7 +57,7 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const emotion = getEmotionDisplay(gbairai.emotion);
+  const emotion = getEmotionDisplay(gbairai.emotion, (gbairai as any).metadata);
   const userHasLiked = gbairai.interactions.some(
     (interaction) => interaction.userId === user?.id && interaction.type === "like"
   );

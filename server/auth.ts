@@ -1,4 +1,5 @@
 import passport from "passport";
+import { Strategy as GoogleStrategy, Profile as GoogleProfile } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
@@ -107,6 +108,60 @@ export function setupAuth(app: Express) {
       }
     )
   );
+
+  // Google OAuth strategy
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL:
+            process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback",
+        },
+        async (accessToken, refreshToken, profile: GoogleProfile, done) => {
+          try {
+            const email = profile.emails?.[0]?.value;
+            if (!email) {
+              return done(null, false);
+            }
+
+            // Find existing user by email
+            let user = await storage.getUserByEmail(email);
+            if (!user) {
+              // Generate a username
+              const baseUsername = (profile.displayName || email.split("@")[0] || "user").replace(/\s+/g, "_");
+              let username = baseUsername.toLowerCase();
+              // Ensure uniqueness
+              let suffix = 0;
+              while (await storage.getUserByUsername(username)) {
+                suffix += 1;
+                username = `${baseUsername}_${suffix}`.toLowerCase();
+              }
+
+              // Create user with random password (not used for Google login)
+              const randomPassword = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+              const hashed = await (async () => {
+                const salt = randomBytes(16).toString("hex");
+                const buf = (await scryptAsync(randomPassword, salt, 64)) as Buffer;
+                return `${buf.toString("hex")}.${salt}`;
+              })();
+
+              user = await storage.createUser({
+                username,
+                email,
+                password: hashed,
+              });
+            }
+
+            return done(null, user);
+          } catch (err) {
+            return done(err as any);
+          }
+        }
+      )
+    );
+  }
 
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
@@ -319,6 +374,27 @@ export function setupAuth(app: Express) {
       res.sendStatus(200);
     });
   });
+
+  // Google OAuth routes
+  app.get(
+    "/auth/google",
+    (req, res, next) => {
+      if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.status(500).json({ error: "Google OAuth non configuré" });
+      }
+      next();
+    },
+    passport.authenticate("google", { scope: ["profile", "email"] })
+  );
+
+  app.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/auth?error=google" }),
+    (req, res) => {
+      // Redirect to home after successful login
+      res.redirect("/");
+    }
+  );
 
   // Étape 1: Demande de réinitialisation du mot de passe
   app.post("/api/password/reset-request", async (req, res) => {

@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { content, emotion, location, isAnonymous } = validationResult.data;
+      const { content, emotion, location, isAnonymous, metadata } = validationResult.data;
 
       // Étape 1: Modération du contenu avec IA et liste noire
       const moderationResult = await moderateContent(content);
@@ -251,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emotion,
         location,
         isAnonymous: isAnonymous !== false,
-        metadata: {}
+        metadata: metadata || {}
       });
 
       // Envoyer notification à tous les utilisateurs

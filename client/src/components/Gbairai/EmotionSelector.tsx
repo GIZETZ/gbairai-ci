@@ -11,7 +11,8 @@ interface EmotionSelectorProps {
   suggestions: EmotionSuggestion[];
   isAnalyzing: boolean;
   customEmotion?: string;
-  onCustomEmotion?: (emotion: string, description: string) => void;
+  customEmoji?: string;
+  onCustomEmotion?: (emotion: string, description: string, emoji: string) => void;
 }
 
 const emotions = [
@@ -30,6 +31,7 @@ export function EmotionSelector({
   suggestions,
   isAnalyzing,
   customEmotion,
+  customEmoji,
   onCustomEmotion
 }: EmotionSelectorProps) {
   const [showCustomEditor, setShowCustomEditor] = useState(false);
@@ -119,8 +121,11 @@ export function EmotionSelector({
       {selectedEmotion === 'inclassable' && customEmotion && (
         <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-orange-900">
-              🎨 Émotion personnalisée: {customEmotion}
+            <span className="text-sm font-medium text-orange-900 flex items-center gap-2">
+              <span className="inline-flex w-6 h-6 rounded-full bg-orange-100 items-center justify-center">
+                {customEmoji || '🎨'}
+              </span>
+              Émotion personnalisée: {customEmotion}
             </span>
             <Button
               variant="ghost"
@@ -146,8 +151,8 @@ export function EmotionSelector({
       <CustomEmotionEditor
         isOpen={showCustomEditor}
         onClose={() => setShowCustomEditor(false)}
-        onSave={(emotion, description) => {
-          onCustomEmotion?.(emotion, description);
+        onSave={(emotion, description, emoji) => {
+          onCustomEmotion?.(emotion, description, emoji);
           onEmotionSelect('inclassable');
         }}
       />
