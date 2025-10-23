@@ -1,0 +1,164 @@
+✅ FICHE DE RÉALISATION : APPLICATION REACT PWA AVEC NOTIFICATIONS ET BADGES
+📌 Objectifs
+Rendre l’application installable sur mobile et PC (PWA)
+
+Afficher l’interface même hors ligne
+
+Accéder aux dernières données sans connexion
+
+Recevoir des notifications push
+
+Afficher le nombre de messages non lus dans l’interface
+
+Afficher un badge sur l’icône de l’application
+
+🔧 1. Ce qu'il faut avoir absolument dans le projet
+mon-app/
+├── public/
+│   ├── manifest.json
+│   ├── icons/
+│   │   ├── icon-192x192.png
+│   │   └── icon-512x512.png
+│   └── index.html
+├── src/
+│   ├── serviceWorkerRegistration.js
+│   ├── App.js
+│   ├── NotificationBadge.js
+│   └── index.js
+├── package.json
+└── ...
+✅ 2. Activer le mode PWA dans React
+a. Dans index.js :
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+// ...
+serviceWorkerRegistration.register();
+b. Crée serviceWorkerRegistration.js (code fourni précédemment)
+👉 Gère l'enregistrement du service worker.
+
+✅ 3. Configurer le manifest.json
+Dans public/manifest.json :
+
+json
+Copier
+Modifier
+{
+  "short_name": "MonApp",
+  "name": "Mon Application PWA",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+✅ 4. Service Worker : notifications + données offline
+a. Ajoute un fichier public/firebase-messaging-sw.js (si tu utilises Firebase Messaging)
+ou utilise le service worker généré par create-react-app pour les notifs avec :
+
+self.addEventListener('push', function(event) {
+  const data = event.data.json();
+  self.registration.showNotification(data.title, {
+    body: data.body,
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-192x192.png',
+  });
+});
+✅ 5. Stockage des notifications (offline)
+Exemple avec localStorage :
+js
+Copier
+Modifier
+useEffect(() => {
+  const unread = localStorage.getItem('unreadCount');
+  if (unread) setUnreadCount(parseInt(unread));
+}, []);
+
+useEffect(() => {
+  localStorage.setItem('unreadCount', unreadCount);
+}, [unreadCount]);
+✅ 6. Composant React pour le badge
+NotificationBadge.js :
+
+import React, { useEffect } from 'react';
+
+const NotificationBadge = ({ unreadCount }) => {
+  useEffect(() => {
+    if ('setAppBadge' in navigator && unreadCount > 0) {
+      navigator.setAppBadge(unreadCount);
+    } else if ('clearAppBadge' in navigator && unreadCount === 0) {
+      navigator.clearAppBadge();
+    }
+  }, [unreadCount]);
+
+  return (
+    <button className="notif-btn">
+      🔔 Notifications
+      {unreadCount > 0 && (
+        <span className="badge">{unreadCount}</span>
+      )}
+    </button>
+  );
+};
+
+export default NotificationBadge;
+Ajoute ce style dans ton CSS :
+
+.badge {
+  background-color: red;
+  border-radius: 50%;
+  color: white;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+✅ 7. Déploiement
+Utilise un hébergeur HTTPS :
+
+Hébergeur	Commande / méthode
+Firebase	firebase deploy
+Netlify	drag & drop dossier build
+Vercel	vercel
+
+Commandes :
+
+npm run build
+npx serve -s build
+📱 Résultat attendu
+Fonction	Résultat
+App installable sur mobile	✅ Oui
+Affichage offline	✅ Oui
+Notifications push	✅ Oui
+Badge dans interface	✅ Oui
+Badge sur icône Android	✅ Oui
+Badge sur icône iOS	❌ Non (non supporté)
+
+💡 Recommandations supplémentaires
+Utilise Workbox si tu veux un contrôle avancé du cache (stratégies, priorités).
+
+Utilise IndexedDB si tu veux stocker des objets complexes (ex: liste de messages).
+
+Active le bouton "Ajouter à l'écran d'accueil" avec beforeinstallprompt.
+
+🎁 Bonus – Détection "hors-ligne"
+
+useEffect(() => {
+  const updateOnlineStatus = () => {
+    setIsOnline(navigator.onLine);
+  };
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  return () => {
+    window.removeEventListener('online', updateOnlineStatus);
+    window.removeEventListener('offline', updateOnlineStatus);
+  };
+}, []);

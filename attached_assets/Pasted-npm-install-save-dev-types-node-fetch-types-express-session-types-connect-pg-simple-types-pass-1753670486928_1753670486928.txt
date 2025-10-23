@@ -1,0 +1,80 @@
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple @types/passport @types/passport-local vite @vitejs/plugin-react @replit/vite-plugin-runtime-error-modal @replit/vite-plugin-cartographer
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple @types/passport @types/passport-local vite @vitejs/plugin-react @replit/vite-plugin-runtime-error-modal @replit/vite-plugin-cartographer && npm install vite @vitejs/plugin-react @replit/vite-plugin-runtime-error-modal @replit/vite-plugin-cartographer --save
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "sourceMap": false,
+    "types": ["node"],
+    "strict": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": [
+    "server/**/*",
+    "shared/**/*",
+    "server/types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "client",
+    "dist"
+  ]
+}
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "sourceMap": false,
+    "types": ["node"],
+    "strict": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": [
+    "server/**/*",
+    "shared/**/*",
+    "server/types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "client",
+    "dist",
+    "server/vite.ts",
+    "vite.config.ts"
+  ]
+}
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple @types/passport @types/passport-local vite @vitejs/plugin-react @replit/vite-plugin-runtime-error-modal @replit/vite-plugin-cartographer && npm install && cd client && npm install --include=dev && npm run build && cd .. && npm run build:server
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple @types/passport @types/passport-local vite @vitejs/plugin-react @replit/vite-plugin-runtime-error-modal @replit/vite-plugin-cartographer && npm install && cd client && npm install --include=dev && npm run build && cd ..
+NODE_ENV=production npm run start
+NODE_ENV=production npx tsx server/index.ts
+Dependencies without tsx
+npm install tsx --save-dev

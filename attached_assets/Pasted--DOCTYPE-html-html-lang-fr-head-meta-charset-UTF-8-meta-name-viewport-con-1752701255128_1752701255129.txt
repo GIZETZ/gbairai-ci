@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface de Commentaires</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0f0f0f;
+            color: #ffffff;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .comments-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        .comment {
+            display: flex;
+            padding: 12px 16px;
+            border-bottom: 1px solid #2a2a2a;
+            transition: background-color 0.2s;
+        }
+
+        .comment:hover {
+            background: #252525;
+        }
+
+        .comment.reply {
+            padding-left: 48px;
+            background: #1e1e1e;
+            border-bottom: 1px solid #333;
+        }
+
+        .comment.reply:hover {
+            background: #282828;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 12px;
+            overflow: hidden;
+        }
+
+        .comment.reply .avatar {
+            width: 28px;
+            height: 28px;
+        }
+
+        .comment-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #ffffff;
+            margin-right: 8px;
+            font-size: 13px;
+        }
+
+        .verified {
+            color: #1da1f2;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .comment-text {
+            color: #e0e0e0;
+            line-height: 1.3;
+            margin-bottom: 6px;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #8a8a8a;
+            margin-bottom: 4px;
+        }
+
+        .time {
+            color: #8a8a8a;
+        }
+
+        .reply-btn, .show-responses-btn, .show-more-replies-btn {
+            background: none;
+            border: none;
+            color: #8a8a8a;
+            cursor: pointer;
+            font-size: 12px;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+
+        .reply-btn:hover, .show-responses-btn:hover, .show-more-replies-btn:hover {
+            color: #ffffff;
+        }
+
+        .show-responses-btn {
+            display: block;
+            margin-top: 4px;
+            text-align: left;
+        }
+
+        .show-more-replies-btn {
+            display: block;
+            margin: 8px 0;
+            text-align: left;
+            padding-left: 48px;
+        }
+
+        .comment-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            margin-left: 8px;
+        }
+
+        .like-btn {
+            background: none;
+            border: none;
+            color: #8a8a8a;
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.2s;
+            padding: 4px;
+        }
+
+        .like-btn:hover {
+            color: #ff6b6b;
+        }
+
+        .like-count {
+            font-size: 11px;
+            color: #8a8a8a;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .emojis {
+            display: inline;
+        }
+
+        .heart {
+            color: #ff6b6b;
+        }
+
+        .butterfly {
+            color: #ff69b4;
+        }
+
+        .crown {
+            color: #ffd700;
+        }
+
+        .replies-container {
+            display: none;
+        }
+
+        .replies-container.visible {
+            display: block;
+        }
+
+        .replies-toggle {
+            transform: rotate(0deg);
+            transition: transform 0.2s;
+        }
+
+        .replies-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        .hidden-replies {
+            display: none;
+        }
+
+        .hidden-replies.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="comments-container">
+        <!-- Message principal -->
+        <div class="comment">
+            <div class="avatar">M</div>
+            <div class="comment-content">
+                <div class="comment-header">
+                    <span class="username">Myra Sangoo</span>
+                    <span class="verified">✓</span>
+                </div>
+                <div class="comment-text">
+                    Djaaaa il était le premier arrivé il a raison <span class="crown">👑</span>
+                </div>
+                <div class="comment-actions">
+                    <span class="time">Il y a 5j</span>
+                    <button class="reply-btn">Répondre</button>
+                </div>
+                <button class="show-responses-btn" onclick="toggleReplies('replies-myra')">
+                    Afficher 5 réponses <span class="replies-toggle">▼</span>
+                </button>
+            </div>
+            <div class="comment-right">
+                <button class="like-btn">🤍</button>
+                <span class="like-count">2525</span>
+            </div>
+        </div>
+
+        <!-- Réponses à Myra Sangoo -->
+        <div class="replies-container" id="replies-myra">
+            <!-- Premières 3 réponses visibles -->
+            <div class="comment reply">
+                <div class="avatar">A</div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="username">Abdou Diallo</span>
+                    </div>
+                    <div class="comment-text">
+                        Exactement frère ! 💯
+                    </div>
+                    <div class="comment-actions">
+                        <span class="time">Il y a 4j</span>
+                        <button class="reply-btn">Répondre</button>
+                    </div>
+                </div>
+                <div class="comment-right">
+                    <button class="like-btn">🤍</button>
+                    <span class="like-count">12</span>
+                </div>
+            </div>
+
+            <div class="comment reply">
+                <div class="avatar">S</div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="username">Sarah Ndiaye</span>
+                    </div>
+                    <div class="comment-text">
+                        Il a tellement raison 😭😭
+                    </div>
+                    <div class="comment-actions">
+                        <span class="time">Il y a 3j</span>
+                        <button class="reply-btn">Répondre</button>
+                    </div>
+                </div>
+                <div class="comment-right">
+                    <button class="like-btn">🤍</button>
+                    <span class="like-count">8</span>
+                </div>
+            </div>
+
+            <div class="comment reply">
+                <div class="avatar">K</div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="username">Khadija Ba</span>
+                    </div>
+                    <div class="comment-text">
+                        @Myra Sangoo tu dis la vérité 👏
+                    </div>
+                    <div class="comment-actions">
+                        <span class="time">Il y a 2j</span>
+                        <button class="reply-btn">Répondre</button>
+                    </div>
+                </div>
+                <div class="comment-right">
+                    <button class="like-btn">🤍</button>
+                    <span class="like-count">5</span>
+                </div>
+            </div>
+
+            <!-- Bouton "Voir 2 de plus" -->
+            <button class="show-more-replies-btn" id="show-more-btn" onclick="showMoreReplies()">
+                Voir 2 de plus ▼
+            </button>
+
+            <!-- 2 réponses supplémentaires cachées -->
+            <div class="hidden-replies" id="hidden-replies">
+                <div class="comment reply">
+                    <div class="avatar">O</div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="username">Omar Thiam</span>
+                        </div>
+                        <div class="comment-text">
+                            C'est exactement ça ! Le respect 🙌
+                        </div>
+                        <div class="comment-actions">
+                            <span class="time">Il y a 1j</span>
+                            <button class="reply-btn">Répondre</button>
+                        </div>
+                    </div>
+                    <div class="comment-right">
+                        <button class="like-btn">🤍</button>
+                        <span class="like-count">15</span>
+                    </div>
+                </div>
+
+                <div class="comment reply">
+                    <div class="avatar">F</div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="username">Fatou Diop</span>
+                        </div>
+                        <div class="comment-text">
+                            Vraiment il mérite le respect 👍✨
+                        </div>
+                        <div class="comment-actions">
+                            <span class="time">Il y a 12h</span>
+                            <button class="reply-btn">Répondre</button>
+                        </div>
+                    </div>
+                    <div class="comment-right">
+                        <button class="like-btn">🤍</button>
+                        <span class="like-count">9</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleReplies(containerId) {
+            const container = document.getElementById(containerId);
+            const button = container.previousElementSibling.querySelector('.show-responses-btn');
+            const arrow = button.querySelector('.replies-toggle');
+            
+            if (container.classList.contains('visible')) {
+                container.classList.remove('visible');
+                button.innerHTML = 'Afficher 5 réponses <span class="replies-toggle">▼</span>';
+                arrow.classList.remove('expanded');
+                // Réinitialiser l'état des réponses cachées
+                resetHiddenReplies();
+            } else {
+                container.classList.add('visible');
+                button.innerHTML = 'Masquer 5 réponses <span class="replies-toggle expanded">▲</span>';
+                arrow.classList.add('expanded');
+            }
+        }
+
+        function showMoreReplies() {
+            const hiddenReplies = document.getElementById('hidden-replies');
+            const showMoreBtn = document.getElementById('show-more-btn');
+            
+            if (hiddenReplies.classList.contains('visible')) {
+                hiddenReplies.classList.remove('visible');
+                showMoreBtn.textContent = 'Voir 2 de plus ▼';
+            } else {
+                hiddenReplies.classList.add('visible');
+                showMoreBtn.textContent = 'Masquer ▲';
+            }
+        }
+
+        function resetHiddenReplies() {
+            const hiddenReplies = document.getElementById('hidden-replies');
+            const showMoreBtn = document.getElementById('show-more-btn');
+            
+            hiddenReplies.classList.remove('visible');
+            showMoreBtn.textContent = 'Voir 2 de plus ▼';
+        }
+
+        // Ajouter des interactions aux boutons like
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.textContent === '🤍') {
+                    this.textContent = '❤️';
+                    this.style.color = '#ff6b6b';
+                } else {
+                    this.textContent = '🤍';
+                    this.style.color = '#8a8a8a';
+                }
+            });
+        });
+
+        // Ajouter des interactions aux boutons de réponse
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('Fonctionnalité de réponse à implémenter');
+            });
+        });
+    </script>
+</body>
+</html>

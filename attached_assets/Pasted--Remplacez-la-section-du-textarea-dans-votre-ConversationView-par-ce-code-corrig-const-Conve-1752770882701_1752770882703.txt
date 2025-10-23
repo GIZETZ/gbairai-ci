@@ -1,0 +1,309 @@
+// Remplacez la section du textarea dans votre ConversationView par ce code corrigé :
+
+const ConversationView = () => {
+  const conversation = conversations.find(c => c.id === selectedConversation);
+  const otherParticipant = conversation ? getOtherParticipant(conversation) : null;
+
+  return (
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-4 border-b">
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedConversation(null)}
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <Avatar className="w-10 h-10">
+            <AvatarFallback>
+              {otherParticipant?.username?.[0]?.toUpperCase() || '?'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-semibold text-foreground truncate">
+              {otherParticipant?.username || 'Conversation'}
+            </h2>
+            <p className="text-sm text-muted-foreground">En ligne</p>
+          </div>
+        </div>
+      </div>
+      <ScrollArea 
+        className="flex-1 p-4 transition-all duration-300 ease-in-out"
+        style={{
+          paddingBottom: isKeyboardOpen ? `${keyboardHeight + 160}px` : '160px'
+        }}
+      >
+        {messagesLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="text-muted-foreground">Chargement des messages...</div>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+            <MessageCircle className="w-8 h-8 mb-2" />
+            <p>Aucun message pour le moment</p>
+            <p className="text-sm">Commencez la conversation</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.senderId === user?.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
+                  }`}
+                >
+                  {/* Affichage selon le type de message */}
+                  {message.type === 'audio' && message.fileUrl && (
+                    <div className="mb-2">
+                      <audio controls className="max-w-full">
+                        <source src={message.fileUrl} type={message.mimeType} />
+                        Votre navigateur ne supporte pas l'audio
+                      </audio>
+                    </div>
+                  )}
+                  
+                  {message.type === 'file' && message.fileUrl && (
+                    <div className="mb-2 flex items-center space-x-2">
+                      <Paperclip className="w-4 h-4" />
+                      <a 
+                        href={message.fileUrl} 
+                        download={message.fileName}
+                        className="text-sm underline hover:no-underline"
+                      >
+                        {message.fileName || 'Télécharger le fichier'}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {message.content && (
+                    <p className="text-sm">{message.content}</p>
+                  )}
+                  
+                  <p className="text-xs opacity-70 mt-1">
+                    {format(new Date(message.createdAt), 'HH:mm', { locale: fr })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </ScrollArea>
+      <div 
+        className="fixed left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-primary/20 p-4 z-20 shadow-lg transition-all duration-300 ease-in-out"
+        style={{
+          bottom: isKeyboardOpen ? `${keyboardHeight}px` : '0px',
+          transform: isKeyboardOpen ? 'translateY(0)' : 'translateY(0)'
+        }}
+      >
+        <form onSubmit={handleSendMessage} className="space-y-4 max-w-4xl mx-auto">
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Écrivez votre message..."
+              className="p-4 pb-12 block w-full h-32 bg-background border-2 border-primary/20 rounded-lg text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none resize-none shadow-sm"
+              rows={3}
+            />
+            
+            {/* Prévisualisation du fichier audio dans la zone de texte */}
+            {selectedFile && (
+              <div className="absolute top-2 right-2 p-2 bg-background rounded-lg border shadow-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
+                    <Mic className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{selectedFile.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFile}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Panneau des stickers */}
+            {showStickers && (
+              <div className="absolute bottom-14 left-2 right-2 bg-background border-2 border-primary/20 rounded-lg shadow-lg p-4 max-h-48 overflow-y-auto z-30">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-sm font-medium text-primary">Stickers</h4>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowStickers(false)}
+                    className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-8 gap-2">
+                  {stickers.map((sticker, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleStickerSelect(sticker)}
+                      className="text-2xl hover:bg-primary/10 rounded p-2 transition-colors border border-transparent hover:border-primary/20"
+                    >
+                      {sticker}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Barre d'outils en bas de la zone de texte */}
+            <div className="absolute bottom-0 inset-x-0 p-2 rounded-b-lg bg-background/80 backdrop-blur-sm">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  {/* Bouton d'upload de fichier audio */}
+                  <label className="cursor-pointer">
+                    <button
+                      type="button"
+                      className="inline-flex flex-shrink-0 justify-center items-center w-10 h-10 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                    >
+                      <Paperclip className="w-5 h-5" />
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                    </button>
+                  </label>
+                  
+                  {/* Bouton d'enregistrement vocal */}
+                  <button
+                    type="button"
+                    onClick={isRecording ? stopRecording : startRecording}
+                    className={`inline-flex flex-shrink-0 justify-center items-center w-10 h-10 rounded-full transition-all duration-200 ${
+                      isRecording 
+                        ? 'text-white bg-red-500 hover:bg-red-600 animate-pulse' 
+                        : 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground'
+                    }`}
+                  >
+                    <Mic className="w-5 h-5" />
+                  </button>
+                  
+                  {/* Bouton stickers */}
+                  <button
+                    type="button"
+                    onClick={() => setShowStickers(!showStickers)}
+                    className={`inline-flex flex-shrink-0 justify-center items-center w-10 h-10 rounded-full transition-all duration-200 ${
+                      showStickers 
+                        ? 'text-primary-foreground bg-primary scale-105' 
+                        : 'bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground'
+                    }`}
+                  >
+                    <Smile className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  {/* Bouton d'envoi */}
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={(!messageText.trim() && !selectedFile) || sendMessageMutation.isPending}
+                    className="w-12 h-10 p-0 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <Send className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Et aussi, modifiez la détection du clavier pour qu'elle soit moins intrusive :
+useEffect(() => {
+  let initialHeight = window.innerHeight;
+  
+  const handleKeyboardDetection = () => {
+    const currentHeight = window.innerHeight;
+    const heightDifference = initialHeight - currentHeight;
+    
+    // Si la différence est significative, le clavier est ouvert
+    if (heightDifference > 150) {
+      setKeyboardHeight(heightDifference);
+      setIsKeyboardOpen(true);
+    } else {
+      setKeyboardHeight(0);
+      setIsKeyboardOpen(false);
+    }
+  };
+
+  // Méthode pour les navigateurs modernes avec visualViewport
+  const handleVisualViewportChange = () => {
+    if (window.visualViewport) {
+      const viewportHeight = window.visualViewport.height;
+      const windowHeight = window.innerHeight;
+      const heightDifference = windowHeight - viewportHeight;
+      
+      if (heightDifference > 150) {
+        setKeyboardHeight(heightDifference);
+        setIsKeyboardOpen(true);
+      } else {
+        setKeyboardHeight(0);
+        setIsKeyboardOpen(false);
+      }
+    }
+  };
+
+  // Écouteurs pour la détection du clavier
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', handleVisualViewportChange);
+  } else {
+    // Fallback pour les navigateurs plus anciens
+    window.addEventListener('resize', handleKeyboardDetection);
+  }
+
+  // Nettoyage
+  return () => {
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+    } else {
+      window.removeEventListener('resize', handleKeyboardDetection);
+    }
+  };
+}, []);
+
+// Modifiez aussi la fonction handleStickerSelect pour éviter les problèmes de focus :
+const handleStickerSelect = (sticker: string) => {
+  const textarea = textareaRef.current;
+  if (textarea) {
+    const cursorPos = textarea.selectionStart;
+    const textBefore = messageText.substring(0, cursorPos);
+    const textAfter = messageText.substring(cursorPos);
+    const newText = textBefore + sticker + textAfter;
+    
+    setMessageText(newText);
+    setShowStickers(false);
+    
+    // Maintenir le focus sur le textarea après insertion
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(cursorPos + sticker.length, cursorPos + sticker.length);
+    });
+  }
+};

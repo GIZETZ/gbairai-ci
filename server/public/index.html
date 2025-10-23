@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, interactive-widget=resizes-content" />
+    <title>Gbairai - Réseau Social Ivoirien</title>
+    <meta name="description" content="Réseau social ivoirien avec analyse d'émotions IA et carte interactive" />
+    
+    
+    <meta name="theme-color" content="#F7C948" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Gbairai" />
+    <meta name="msapplication-TileColor" content="#F7C948" />
+    <meta name="msapplication-TileImage" content="/icon-144x144.png" />
+    
+    
+    <link rel="manifest" href="/manifest.json" />
+    
+    
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/icon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="72x72" href="/icon-72x72.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/icon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="/icon-144x144.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
+    
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icon-96x96.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/icon-72x72.png" />
+    
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script type="module" crossorigin src="/assets/index--qOycbhk.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-1XCZ5AD1.js">
+    <link rel="modulepreload" crossorigin href="/assets/ui-BIpksUFU.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-B_PBuXyF.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    
+    <!-- Bouton d'installation PWA -->
+    <button id="install-button" onclick="installApp()" style="display: none; position: fixed; bottom: 20px; right: 20px; background-color: #F7C948; color: #1D3557; padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; font-family: system-ui, -apple-system, sans-serif;">
+      📲 Installer Gbairai
+    </button>
+    
+    <script>
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installButton = document.querySelector('#install-button');
+        if (installButton) {
+          installButton.style.display = 'block';
+        }
+      });
+      
+      function installApp() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('Utilisateur a accepté l\'installation');
+            }
+            deferredPrompt = null;
+          });
+        }
+      }
+      
+      window.installApp = installApp;
+    </script>
+    
+    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+  </body>
+</html>

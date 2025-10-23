@@ -1,0 +1,443 @@
+import React, { useState, useRef } from 'react';
+import { MobileLayout } from '@/components/Common/MobileLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, MessageCircle, Users, Send, ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  useUsers, 
+  useConversations, 
+  useMessages, 
+  useCreateConversation, 
+  useSendMessage
+} from '@/hooks/useMessaging';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+export default function MessagesPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
+  const [messageText, setMessageText] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Hooks pour les données
+  const { data: allUsers = [], isLoading: usersLoading } = useUsers();
+  const { data: conversations = [], isLoading: conversationsLoading } = useConversations();
+  const { data: messages = [], isLoading: messagesLoading } = useMessages(selectedConversation || 0);
+  const createConversationMutation = useCreateConversation();
+  const sendMessageMutation = useSendMessage();
+
+  // Filtrage des données
+  const filteredUsers = allUsers.filter(u => 
+    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const filteredConversations = conversations.filter(c =>
+    c.participants.some(p => 
+      p.username.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
+  // Handlers
+  const handleCreateConversation = async (recipientId: number) => {
+    try {
+      const conversation = await createConversationMutation.mutateAsync(recipientId);
+      setSelectedConversation(conversation.id);
+      toast({
+        title: "Conversation créée",
+        description: "Vous pouvez maintenant envoyer des messages",
+      });
+    } catch (error) {
+      console.error('Erreur création conversation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la conversation",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageText.trim() || !selectedConversation) return;
+
+    try {
+      await sendMessageMutation.mutateAsync({
+        conversationId: selectedConversation,
+        content: messageText.trim(),
+      });
+      
+      setMessageText('');
+      
+      // Maintenir le focus sur le textarea après envoi
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 0);
+    } catch (error) {
+      console.error('Erreur envoi message:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getOtherParticipant = (conversation: any) => {
+    return conversation.participants.find((p: any) => p.id !== user?.id);
+  };
+
+  // Vue de conversation
+  const ConversationView = () => {
+    const conversation = conversations.find(c => c.id === selectedConversation);
+    const otherParticipant = conversation ? getOtherParticipant(conversation) : null;
+
+    return (
+      <div className="flex flex-col h-full bg-background">
+        <div className="p-4 border-b">
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedConversation(null)}
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <Avatar className="w-10 h-10">
+              <AvatarFallback>
+                {otherParticipant?.username?.[0]?.toUpperCase() || '?'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-foreground truncate">
+                {otherParticipant?.username || 'Conversation'}
+              </h2>
+              <p className="text-sm text-muted-foreground">En ligne</p>
+            </div>
+          </div>
+        </div>
+        
+        <ScrollArea className="flex-1 p-4 pb-20">
+          {messagesLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="text-muted-foreground">Chargement des messages...</div>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+              <MessageCircle className="w-8 h-8 mb-2" />
+              <p>Aucun message pour le moment</p>
+              <p className="text-sm">Commencez la conversation</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      message.senderId === user?.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {format(new Date(message.createdAt), 'HH:mm', { locale: fr })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+        
+        <div className="p-4 border-t bg-background">
+          <form onSubmit={handleSendMessage} className="flex space-x-2">
+            <Input
+              ref={textareaRef}
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Écrivez votre message..."
+              className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage(e);
+                }
+              }}
+            />
+            <Button
+              type="submit"
+              disabled={!messageText.trim() || sendMessageMutation.isPending}
+              className="px-4"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <MobileLayout>
+      <div className="h-full flex">
+        {/* Mobile: Vue simple selon l'état */}
+        <div className="flex-1 md:hidden">
+          {selectedConversation ? (
+            <ConversationView />
+          ) : (
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b">
+                <h1 className="text-xl font-bold text-foreground mb-4">Messages</h1>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              <Tabs defaultValue="users" className="flex-1 flex flex-col">
+                <TabsList className="grid w-full grid-cols-2 mx-4 mt-2">
+                  <TabsTrigger value="users">Utilisateurs</TabsTrigger>
+                  <TabsTrigger value="conversations">Conversations</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="users" className="flex-1 mt-0">
+                  <ScrollArea className="h-full">
+                    {usersLoading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="text-muted-foreground">Chargement...</div>
+                      </div>
+                    ) : (
+                      <div className="p-4 space-y-3">
+                        {filteredUsers
+                          .filter(u => u.id !== user?.id)
+                          .map((contact) => (
+                            <Card 
+                              key={contact.id}
+                              className="cursor-pointer hover:bg-accent transition-colors"
+                              onClick={() => handleCreateConversation(contact.id)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-center space-x-3">
+                                  <Avatar className="w-12 h-12">
+                                    <AvatarFallback>
+                                      {contact.username[0]?.toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-foreground truncate">
+                                      {contact.username}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground truncate">
+                                      {contact.email}
+                                    </p>
+                                  </div>
+                                  <MessageCircle className="w-5 h-5 text-muted-foreground" />
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
+                
+                <TabsContent value="conversations" className="flex-1 mt-0">
+                  <ScrollArea className="h-full">
+                    {conversationsLoading ? (
+                      <div className="flex items-center justify-center h-32">
+                        <div className="text-muted-foreground">Chargement...</div>
+                      </div>
+                    ) : (
+                      <div className="p-4 space-y-3">
+                        {filteredConversations.map((conversation) => {
+                          const otherParticipant = getOtherParticipant(conversation);
+                          return (
+                            <Card 
+                              key={conversation.id}
+                              className="cursor-pointer hover:bg-accent transition-colors"
+                              onClick={() => setSelectedConversation(conversation.id)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-center space-x-3">
+                                  <Avatar className="w-12 h-12">
+                                    <AvatarFallback>
+                                      {otherParticipant?.username?.[0]?.toUpperCase() || '?'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-foreground truncate">
+                                      {otherParticipant?.username || 'Conversation'}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground truncate">
+                                      {conversation.lastMessage?.content || 'Nouvelle conversation'}
+                                    </p>
+                                  </div>
+                                  {conversation.unreadCount > 0 && (
+                                    <Badge variant="destructive">
+                                      {conversation.unreadCount}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: Vue à deux colonnes */}
+        <div className="hidden md:flex flex-1">
+          <div className="w-1/2 border-r">
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-bold text-foreground mb-4">Contacts</h2>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <Tabs defaultValue="users" className="flex-1 flex flex-col">
+                <TabsList className="grid w-full grid-cols-2 mx-4 mt-2">
+                  <TabsTrigger value="users">
+                    <Users className="w-4 h-4 mr-2" />
+                    Utilisateurs
+                  </TabsTrigger>
+                  <TabsTrigger value="conversations">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Conversations
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="users" className="flex-1 mt-0">
+                  <ScrollArea className="h-full">
+                    <div className="p-4 space-y-3">
+                      {filteredUsers
+                        .filter(u => u.id !== user?.id)
+                        .map((contact) => (
+                          <Card 
+                            key={contact.id}
+                            className="cursor-pointer hover:bg-accent transition-colors"
+                            onClick={() => handleCreateConversation(contact.id)}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-center space-x-3">
+                                <Avatar className="w-10 h-10">
+                                  <AvatarFallback>
+                                    {contact.username[0]?.toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-foreground truncate text-sm">
+                                    {contact.username}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {contact.email}
+                                  </p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+                
+                <TabsContent value="conversations" className="flex-1 mt-0">
+                  <ScrollArea className="h-full">
+                    <div className="p-4 space-y-3">
+                      {filteredConversations.map((conversation) => {
+                        const otherParticipant = getOtherParticipant(conversation);
+                        return (
+                          <Card 
+                            key={conversation.id}
+                            className={`cursor-pointer hover:bg-accent transition-colors ${
+                              selectedConversation === conversation.id ? 'bg-accent' : ''
+                            }`}
+                            onClick={() => setSelectedConversation(conversation.id)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center space-x-3">
+                                <Avatar className="w-12 h-12">
+                                  <AvatarFallback>
+                                    {otherParticipant?.username?.[0]?.toUpperCase() || '?'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between">
+                                    <h3 className="font-semibold text-foreground truncate">
+                                      {otherParticipant?.username || 'Conversation'}
+                                    </h3>
+                                    {conversation.lastMessage && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {format(new Date(conversation.lastMessage.timestamp), 'HH:mm', { locale: fr })}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground truncate">
+                                    {conversation.lastMessage?.content || 'Nouvelle conversation'}
+                                  </p>
+                                </div>
+                                {conversation.unreadCount > 0 && (
+                                  <Badge variant="destructive" className="ml-2">
+                                    {conversation.unreadCount}
+                                  </Badge>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+          
+          <div className="w-1/2">
+            {selectedConversation ? (
+              <ConversationView />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <MessageCircle className="w-16 h-16 mb-4" />
+                <h2 className="text-xl font-semibold">Sélectionnez une conversation</h2>
+                <p>Choisissez un contact pour commencer à discuter</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MobileLayout>
+  );
+}

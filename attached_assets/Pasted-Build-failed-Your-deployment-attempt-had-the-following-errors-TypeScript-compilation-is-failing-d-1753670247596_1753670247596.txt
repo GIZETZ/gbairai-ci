@@ -1,0 +1,81 @@
+Build failed
+Your deployment attempt had the following errors:
+TypeScript compilation is failing due to missing module '@shared/schema' and its type declarations in server/auth.ts
+Multiple TypeScript errors including missing Vite module dependencies and undefined variables like 'gbairais' and 'conversations' in server/db.ts
+Missing type declarations for Express session properties like 'login', 'logout', and 'isAuthenticated' in server/auth.ts
+Assistant suggestions
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "sourceMap": false,
+    "types": ["node"],
+    "strict": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false
+  },
+  "include": [
+    "server/**/*",
+    "shared/**/*",
+    "server/types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "client",
+    "dist"
+  ]
+}
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "sourceMap": false,
+    "types": ["node"],
+    "strict": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": [
+    "server/**/*",
+    "shared/**/*",
+    "server/types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "client",
+    "dist"
+  ]
+}
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple && npm install && cd client && npm install --include=dev && npm run build && cd .. && npm run build:server
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple vite @vitejs/plugin-react @replit/vite-plugin-runtime-error-modal @replit/vite-plugin-cartographer && npm install && cd client && npm install --include=dev && npm run build && cd .. && npm run build:server
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple
+npm install --save-dev @types/node-fetch @types/express-session @types/connect-pg-simple @types/passport && npm install express-session passport
+server/db.ts(76,53): error TS2304: Cannot find name 'gbairais'.
+server/db.ts(77,63): error TS2304: Cannot find name 'conversations'.
+Import gbairais and conversations tables from @shared/schema at the top of server/db.ts file
+"strict": true,
+"strict": false,

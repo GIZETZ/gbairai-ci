@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gbairai - Authentification</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    emailjs.init("80uppJ5N5LVthj_SB"); // Clé publique EmailJS
+  </script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1a1a1a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #2b2b2b;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+      width: 320px;
+      text-align: center;
+      animation: fadeIn 1s ease;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #e11d48;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #e11d48;
+      border: none;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #be123c;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Connexion Gbairai</h2>
+    <input type="email" id="email" placeholder="Votre adresse email" />
+    <button onclick="envoyerCode()">📨 Envoyer le code</button>
+    <input type="text" id="code" placeholder="Entrez le code reçu" />
+    <button onclick="verifierCode()">✅ Vérifier</button>
+  </div>
+
+  <script>
+    function envoyerCode() {
+      const email = document.getElementById("email").value.trim();
+      if (!email) return alert("Veuillez entrer une adresse email valide.");
+
+      const code = Math.floor(100000 + Math.random() * 900000); // 6 chiffres
+      localStorage.setItem("verification_code", code);
+
+      const params = {
+        user_email: email,
+        code: code
+      };
+
+      emailjs.send("service_teu1wgq", "template_verification", params)
+        .then(() => {
+          alert("✅ Code envoyé à " + email);
+        }, (error) => {
+          console.error(error);
+          alert("❌ Erreur lors de l'envoi : " + error.text);
+        });
+    }
+
+    function verifierCode() {
+      const codeEntré = document.getElementById("code").value.trim();
+      const vraiCode = localStorage.getItem("verification_code");
+
+      if (codeEntré === vraiCode) {
+        alert("🔓 Code vérifié ! Accès autorisé.");
+        // 👉 Redirection possible ici
+      } else {
+        alert("❌ Code incorrect. Réessayez.");
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+// src/utils/blacklist.js
+// Liste de mots interdits pour système de modération
+// Attention: Cette liste est destinée à des fins de développement et modération
+
+export const bannedWords = [
+  // Grossièretés françaises courantes
+  "merde", "putain", "connard", "connasse", "salope", "pute", "enculé", "enculée",
+  "con", "conne", "batard", "batarde", "fdp", "ntm", "ta mère", "tamère",
+  "nique", "niquer", "baise", "baiser", "suce", "sucer", "chatte", "bite",
+  "couille", "couilles", "cul", "chier", "chiasse", "salaud", "salaud",
+  "bordel", "putain", "salopard", "saloparde", "encule", "niquez",
+  "chienne", "porc", "cochon", "catin", "trainée", "garce", "ordure",
+  "fumier", "raclure", "vermine", "charogne", "pourri", "pourrie",
+  
+  // Variantes avec accents et caractères spéciaux
+  "pétasse", "pédale", "tapette", "enfoiré", "enfoirée", "crétin", "crétine",
+  "débile", "abruti", "abrutie", "crétin", "crétine", "idiot", "idiote",
+  "imbécile", "stupide", "dégueulasse", "dégueu", "crade", "cracra",
+  
+  // Termes sexuels explicites
+  "sexe", "porn", "porno", "xxx", "cul", "nichons", "seins", "tétons",
+  "vagin", "pénis", "phallus", "masturbation", "masturber", "orgasme",
+  "éjaculation", "sodomie", "fellation", "cunnilingus", "coït", "fornication",
+  
+  // Injures racistes et discriminatoires (à adapter selon le contexte)
+  "nègre", "négro", "bamboula", "bounty", "bougnoule", "bicot", "raton",
+  "youpin", "youpine", "feuj", "ritale", "macaroni", "polak", "schleu",
+  "rosbif", "ricain", "amerlock", "métèque", "pédé", "gouine", "tapette",
+  
+  // Termes violents
+  "tuer", "crever", "buter", "flinguer", "descendre", "assassiner",
+  "violer", "viol", "tabasser", "frapper", "cogner", "défonce", "défoncer",
+  "massacre", "massacrer", "torturer", "torture", "mutiler", "mutilation",
+  
+  // Drogues et substances
+  "drogue", "cannabis", "haschisch", "marijuana", "cocaïne", "héroïne",
+  "ecstasy", "lsd", "speed", "amphétamine", "crack", "méthamphétamine",
+  "dealer", "dealeuse", "pusher", "came", "shit", "beuh", "weed",
+  
+  // Termes liés à l'extrémisme (à adapter selon le contexte)
+  "terroriste", "attentat", "bombe", "explosif", "kamikaze", "djihad",
+  "nazi", "fasciste", "antisémite", "raciste", "xénophobe", "homophobe",
+  
+  // Argot et verlan
+  "wesh", "wallah", "zarma", "chelou", "relou", "ouf", "tepu", "teub",
+  "meuf", "keuf", "keum", "reuf", "reubeu", "rebeu", "feumeu", "tipar",
+  "tebé", "tise", "picole", "cuite", "bourré", "pété", "défoncé",
+  
+  // Anglicismes courants
+  "fuck", "fucking", "shit", "damn", "hell", "bitch", "asshole", "bastard",
+  "dickhead", "motherfucker", "cocksucker", "whore", "slut", "cunt",
+  "pussy", "dick", "cock", "balls", "tits", "boobs", "ass", "butt",
+  
+  // Variantes avec caractères de remplacement
+  "f*ck", "f**k", "sh*t", "sh**", "b*tch", "a**hole", "d*mn",
+  "m*rde", "p*tain", "c*n", "s*lope", "enc*lé", "b*tard",
+  "****", "***", "**", "*", "!@#$", "@#$%", "#$%^", "$%^&",
+  
+  // Variations numériques (leetspeak)
+  "m3rd3", "put41n", "c0n", "s4l0p3", "3nculé", "b4t4rd",
+  "fck", "sht", "btch", "4ssh0l3", "d4mn", "h3ll",
+  
+  // Termes médicaux détournés
+  "pathologie", "maladie", "infection", "virus", "cancer", "sida",
+  "handicapé", "handicapée", "invalide", "débile", "mongol", "attardé",
+  "autiste", "psychopathe", "fou", "folle", "dingue", "malade",
+  
+  // Termes politiques sensibles (à adapter selon le contexte)
+  "facho", "facha", "gaucho", "gauchiste", "droitard", "communiste",
+  "capitaliste", "bourgeois", "prolétaire", "révolution", "anarchiste",
+  
+  // Onomatopées et exclamations
+  "beurk", "pouah", "berk", "dégueulasse", "cracra", "crade", "moche",
+  "affreux", "hideux", "répugnant", "écœurant", "nauséabond"
+];
+
+// Fonction pour vérifier si un texte contient des mots interdits
+export const containsBannedWords = (text, customWords = []) => {
+  const allBannedWords = [...bannedWords, ...customWords];
+  const lowerText = text.toLowerCase();
+  
+  return allBannedWords.some(word => 
+    lowerText.includes(word.toLowerCase())
+  );
+};
+
+// Fonction pour censurer les mots interdits
+export const censorText = (text, replacement = "***") => {
+  let censoredText = text;
+  
+  bannedWords.forEach(word => {
+    const regex = new RegExp(word, "gi");
+    censoredText = censoredText.replace(regex, replacement);
+  });
+  
+  return censoredText;
+};
+
+// Fonction pour obtenir la liste des mots interdits trouvés
+export const getFoundBannedWords = (text) => {
+  const lowerText = text.toLowerCase();
+  return bannedWords.filter(word => 
+    lowerText.includes(word.toLowerCase())
+  );
+};
+
+// Catégories de mots pour une modération plus fine
+export const wordCategories = {
+  PROFANITY: ["merde", "putain", "connard", "salope", "pute", "enculé"],
+  SEXUAL: ["sexe", "porn", "porno", "xxx", "masturbation", "orgasme"],
+  VIOLENCE: ["tuer", "crever", "buter", "violer", "tabasser", "massacre"],
+  DRUGS: ["drogue", "cannabis", "cocaïne", "héroïne", "dealer", "came"],
+  DISCRIMINATION: ["nègre", "bougnoule", "youpin", "pédé", "gouine"],
+  MILD: ["débile", "idiot", "stupide", "crétin", "imbécile"]
+};
+
+// Fonction pour vérifier par catégorie
+export const checkByCategory = (text, category) => {
+  const wordsInCategory = wordCategories[category] || [];
+  const lowerText = text.toLowerCase();
+  
+  return wordsInCategory.some(word => 
+    lowerText.includes(word.toLowerCase())
+  );
+};

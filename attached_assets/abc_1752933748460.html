@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carte Gbairai</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    :root {
+      --emotion-color: #E63946; /* Rouge par défaut pour la colère */
+    }
+
+    body {
+      background: #f5f5f5;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      position: relative;
+      width: 240px;
+      height: 300px;
+      color: #fff;
+      transition: 0.4s ease-in-out;
+      cursor: pointer;
+      margin: 1rem;
+      border-radius: 1.2em;
+    }
+
+    .card:hover {
+      transform: translateY(-15px);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      padding: 5px;
+      border-radius: 1.2em;
+      background: linear-gradient(135deg, #f88900, #ffffff, #00a86b); /* Orange, Blanc, Vert */
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      z-index: 0;
+    }
+
+    .card .background {
+      position: absolute;
+      inset: 0;
+      border-radius: 1.2em;
+      background: var(--emotion-color);
+      z-index: 1;
+    }
+
+    .card .overlay {
+      position: absolute;
+      inset: 6px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 1em;
+      z-index: 2;
+    }
+
+    .card .content {
+      position: relative;
+      z-index: 3;
+      padding: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card .emotion {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .card .preview {
+      font-size: 1.1rem;
+      font-weight: 500;
+      flex-grow: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card .meta {
+      font-size: 0.85rem;
+      color: #ccc;
+      text-align: right;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" style="--emotion-color: #06D6A0;">
+    <div class="background"></div>
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="emotion">😌 Calme – Cocody</div>
+      <div class="preview">J’ai rencontré un ancien pote devant le campus, on a causé longtemps...</div>
+      <div class="meta">il y a 30 min</div>
+    </div>
+  </div>
+
+</body>
+</html>

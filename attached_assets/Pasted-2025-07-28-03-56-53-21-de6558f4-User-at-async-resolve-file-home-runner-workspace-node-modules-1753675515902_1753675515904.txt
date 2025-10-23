@@ -1,0 +1,131 @@
+2025-07-28 03:56:53.21
+de6558f4
+User
+at async resolve (file:///home/runner/workspace/node_modules/tsx/dist/esm/index.mjs?1753675012681:2:5422)
+2025-07-28 03:56:53.21
+de6558f4
+User
+at async nextResolve (node:internal/modules/esm/hooks:864:22)
+2025-07-28 03:56:53.21
+de6558f4
+User
+at async Hooks.resolve (node:internal/modules/esm/hooks:306:24) {
+2025-07-28 03:56:53.21
+de6558f4
+User
+code: 'ERR_MODULE_NOT_FOUND'
+2025-07-28 03:56:53.21
+de6558f4
+User
+}
+2025-07-28 03:56:53.21
+de6558f4
+User
+2025-07-28 03:56:53.21
+de6558f4
+User
+Node.js v20.19.3
+2025-07-28 03:56:53.23
+de6558f4
+System
+command finished with error [sh -c NODE_ENV=production PORT=10000 ./node_modules/.bin/tsx server/index.ts]: exit status 1
+2025-07-28 03:56:58.75
+de6558f4
+System
+crash loop detected
+2025-07-28 03:57:17.24
+38a3468a
+System
+starting up user application
+2025-07-28 03:57:17.68
+38a3468a
+System
+forwarding local port 10000 to external port 80 (mapped as 1104)
+2025-07-28 03:57:32.74
+38a3468a
+User
+URL nettoyée: postgresql://neondb_owner:npg_...
+2025-07-28 03:57:32.74
+38a3468a
+User
+DATABASE_URL chargée depuis l'environnement
+2025-07-28 03:57:33.17
+38a3468a
+User
+[dotenv@17.2.0] injecting env (0) from .env (tip: ⚙️ load multiple .env files with { path: ['.env.local', '.env'] })
+2025-07-28 03:57:33.17
+38a3468a
+User
+DATABASE_URL loaded: ✓
+2025-07-28 03:57:33.17
+38a3468a
+User
+DATABASE_URL starts with: postgresql://neondb_owner:npg_...
+2025-07-28 03:57:33.20
+38a3468a
+User
+❌ Error in serveStatic: ReferenceError: __dirname is not defined
+2025-07-28 03:57:33.20
+38a3468a
+User
+at serveStatic (/home/runner/workspace/server/vite.ts:73:37)
+2025-07-28 03:57:33.20
+38a3468a
+User
+at (/home/runner/workspace/server/index.ts:96:5)
+2025-07-28 03:57:33.20
+38a3468a
+User
+🚀 Running in PRODUCTION mode
+2025-07-28 03:57:33.20
+38a3468a
+User
+🌍 Environment variables: {
+2025-07-28 03:57:33.20
+38a3468a
+User
+NODE_ENV: 'production',
+2025-07-28 03:57:33.20
+38a3468a
+User
+REPL_SLUG: 'workspace',
+2025-07-28 03:57:33.20
+38a3468a
+User
+REPLIT_DEPLOYMENT: '1',
+2025-07-28 03:57:33.20
+38a3468a
+User
+PORT: '10000',
+2025-07-28 03:57:33.20
+38a3468a
+User
+DATABASE_URL: 'configured'
+2025-07-28 03:57:33.20
+38a3468a
+User
+}
+2025-07-28 03:57:34.02
+38a3468a
+User
+3:57:33 AM [express] 🚀 Server running on 0.0.0.0:10000
+2025-07-28 03:57:34.02
+38a3468a
+User
+3:57:34 AM [express] 🌐 API available at http://0.0.0.0:10000/api
+2025-07-28 03:57:34.02
+38a3468a
+User
+3:57:34 AM [express] 📁 Environment: production
+2025-07-28 03:57:34.02
+38a3468a
+User
+3:57:34 AM [express] 📦 Serving static files in production
+2025-07-28 03:57:34.36
+38a3468a
+User
+✅ Database pool connected
+2025-07-28 03:57:34.87
+38a3468a
+User
+✅ Database connection verified
