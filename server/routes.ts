@@ -361,13 +361,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         if (notificationMessage) {
-          await storage.createNotification({
-            userId: gbairai.userId,
-            type: type as 'like' | 'comment',
-            fromUserId: req.user?.id,
-            gbairaiId,
-            message: notificationMessage
-          });
+          await storage.createNotification(
+            gbairai.userId,
+            type,
+            notificationMessage,
+            req.user?.id,
+            gbairaiId
+          );
         }
       }
 

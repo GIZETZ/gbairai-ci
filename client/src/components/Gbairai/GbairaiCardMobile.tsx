@@ -20,6 +20,7 @@ import { EmojiPicker } from "../Common/EmojiPicker";
 import { emotionConfig, getEmotionDisplay } from "@/components/Gbairai/GbairaiCard";
 import { ShareToConversationModal } from "./ShareToConversationModal";
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 import html2canvas from "html2canvas";
 
 interface GbairaiCardMobileProps {
@@ -38,6 +39,7 @@ export function GbairaiCardMobile({
   onCommentsToggle
 }: GbairaiCardMobileProps) {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const interactMutation = useInteractWithGbairai();
   const [showCommentForm, setShowCommentForm] = useState(false);
@@ -62,6 +64,9 @@ export function GbairaiCardMobile({
     parentComment: null
   });
   const [isCommentEditorFocused, setIsCommentEditorFocused] = useState(false);
+  // Gestion de l'affichage mobile pour éviter les décalages avec le clavier
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [bottomInset, setBottomInset] = useState<number>(0);
   const [commentReplies, setCommentReplies] = useState<Record<number, any[]>>({});
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     show: boolean;
@@ -163,8 +168,7 @@ export function GbairaiCardMobile({
 
     // Pour les commentaires, ouvrir la vue commentaires au lieu de créer une interaction vide
     if (type === 'comment') {
-      setShowComments(true);
-      onCommentsToggle?.(true);
+      setLocation(`/gbairai/${gbairai.id}/comments`);
       return;
     }
 
@@ -310,6 +314,34 @@ export function GbairaiCardMobile({
         document.body.style.position = '';
         document.body.style.width = '';
         document.body.style.height = '';
+      };
+    }
+  }, [showComments, repliesOverlay.isVisible]);
+
+  // Ajuster la hauteur des overlays en fonction du clavier mobile (visualViewport)
+  useEffect(() => {
+    const vv = (window as any).visualViewport as VisualViewport | undefined;
+    const updateViewport = () => {
+      if (vv) {
+        setViewportHeight(Math.round(vv.height));
+        // Certains navigateurs exposent un offsetTop/offsetLeft quand le clavier est ouvert
+        const inset = Math.max(0, Math.round((vv as any).offsetTop || 0));
+        setBottomInset(inset);
+      } else {
+        setViewportHeight(null);
+        setBottomInset(0);
+      }
+    };
+
+    if (showComments || repliesOverlay.isVisible) {
+      updateViewport();
+      vv?.addEventListener('resize', updateViewport);
+      vv?.addEventListener('scroll', updateViewport);
+      window.addEventListener('orientationchange', updateViewport);
+      return () => {
+        vv?.removeEventListener('resize', updateViewport);
+        vv?.removeEventListener('scroll', updateViewport);
+        window.removeEventListener('orientationchange', updateViewport);
       };
     }
   }, [showComments, repliesOverlay.isVisible]);
@@ -815,21 +847,35 @@ export function GbairaiCardMobile({
     }
   };
 
-  const handleReplyToComment = (comment: any, parentUsername?: string) => {
+  const handleReplyToComment = (commentOrId: any, parentUsername?: string) => {
     if (isGuest) {
       onAuthRequired?.();
       return;
     }
-    const username = comment.user?.username || comment.username;
-    // Si on est dans l'overlay, on répond au commentaire parent
-    if (repliesOverlay.isVisible && repliesOverlay.commentId) {
-      setReplyingTo({ commentId: repliesOverlay.commentId, username });
-    } else {
-      setReplyingTo({ commentId: comment.id, username });
+    let targetCommentId: number | null = null;
+    let username: string = 'Utilisateur';
+
+    if (typeof commentOrId === 'number') {
+      // Appel depuis CommentItem: (commentId, username)
+      targetCommentId = commentOrId;
+      if (parentUsername && typeof parentUsername === 'string') {
+        username = parentUsername;
+      }
+    } else if (commentOrId) {
+      // Appel interne: (commentObject)
+      username = commentOrId.user?.username || commentOrId.username || 'Utilisateur';
+      targetCommentId = commentOrId.id;
     }
-    // Auto-tag the parent comment author or the specific user being replied to
-    const taggedUser = parentUsername || username;
-    setCommentText(`@${taggedUser} `);
+
+    // Si overlay ouvert, répondre au commentaire parent
+    if (repliesOverlay.isVisible && repliesOverlay.commentId) {
+      targetCommentId = repliesOverlay.commentId;
+    }
+
+    if (targetCommentId) {
+      setReplyingTo({ commentId: targetCommentId, username });
+      setCommentText(`@${username} `);
+    }
   };
 
   const toggleReplies = (commentId: number) => {
@@ -1075,7 +1121,10 @@ export function GbairaiCardMobile({
 
       {/* Modal des commentaires en plein écran */}
       {showComments && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex flex-col"
+          style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
+        >
           {/* Header */}
           <div className="flex-shrink-0 bg-gray-900 border-b border-gray-700 p-4">
             <div className="flex items-center justify-between">
@@ -1106,23 +1155,13 @@ export function GbairaiCardMobile({
                 <div key={comment.id} className="space-y-2">
                   <CommentItem
                     comment={comment}
-                    onReply={handleReplyToComment}
-                    onLike={handleLikeComment}
-                    onToggleMenu={handleCommentMenuToggle}
-                    onDelete={handleDeleteComment}
-                    onTranslate={handleTranslateComment}
-                    onReport={handleReportComment}
-                    isLiked={isCommentLikedByUser(comment.id)}
-                    likesCount={getCommentLikesCount(comment.id)}
-                    isMenuOpen={activeCommentMenu?.commentId === comment.id}
                     isOwner={comment.userId === user?.id}
-                    currentUser={user}
-                    onToggleReplies={() => toggleReplies(comment.id)}
-                    repliesCount={getRepliesForComment(comment.id).length}
-                    showReplies={expandedReplies.has(comment.id)}
-                    onViewAllReplies={() => openRepliesOverlay(comment.id, comment)}
-                    isGuest={isGuest}
-                    onAuthRequired={onAuthRequired}
+                    onMenuToggle={handleCommentMenuToggle}
+                    isMenuOpen={activeCommentMenu?.commentId === comment.id}
+                    onDeleteComment={handleDeleteComment}
+                    onTranslateComment={handleTranslateComment}
+                    onReportComment={handleReportComment}
+                    onReplyToComment={handleReplyToComment}
                   />
                   
                   {/* Réponses inline (limité à 2) */}
@@ -1132,20 +1171,13 @@ export function GbairaiCardMobile({
                         <CommentItem
                           key={reply.id}
                           comment={reply}
-                          onReply={handleReplyToComment}
-                          onLike={handleLikeComment}
-                          onToggleMenu={handleCommentMenuToggle}
-                          onDelete={handleDeleteComment}
-                          onTranslate={handleTranslateComment}
-                          onReport={handleReportComment}
-                          isLiked={isCommentLikedByUser(reply.id)}
-                          likesCount={getCommentLikesCount(reply.id)}
-                          isMenuOpen={activeCommentMenu?.commentId === reply.id}
                           isOwner={reply.userId === user?.id}
-                          currentUser={user}
-                          isReply={true}
-                          isGuest={isGuest}
-                          onAuthRequired={onAuthRequired}
+                          onMenuToggle={handleCommentMenuToggle}
+                          isMenuOpen={activeCommentMenu?.commentId === reply.id}
+                          onDeleteComment={handleDeleteComment}
+                          onTranslateComment={handleTranslateComment}
+                          onReportComment={handleReportComment}
+                          onReplyToComment={handleReplyToComment}
                         />
                       ))}
                       
@@ -1167,7 +1199,10 @@ export function GbairaiCardMobile({
           </div>
 
           {/* Formulaire de commentaire */}
-          <div className="flex-shrink-0 bg-gray-900 border-t border-gray-700 p-4">
+          <div
+            className="flex-shrink-0 bg-gray-900 border-t border-gray-700 p-4"
+            style={{ paddingBottom: `calc(1rem + env(safe-area-inset-bottom, 0px) + ${bottomInset}px)` }}
+          >
             {replyingTo && (
               <div className="mb-2 text-sm text-gray-400 bg-gray-800 rounded px-3 py-2 flex items-center justify-between">
                 <span>Réponse à @{replyingTo.username}</span>
@@ -1197,6 +1232,7 @@ export function GbairaiCardMobile({
                 }}
                 onFocus={() => setIsCommentEditorFocused(true)}
                 onBlur={() => setIsCommentEditorFocused(false)}
+                inputMode="text"
               />
               <Button
                 onClick={handleCommentSubmit}
@@ -1212,7 +1248,10 @@ export function GbairaiCardMobile({
 
       {/* Overlay des réponses en plein écran */}
       {repliesOverlay.isVisible && repliesOverlay.commentId && (
-        <div className="fixed inset-0 bg-black bg-opacity-95 z-60 flex flex-col">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-95 z-60 flex flex-col"
+          style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
+        >
           {/* Header avec commentaire parent */}
           <div className="flex-shrink-0 bg-gray-900 border-b border-gray-700 p-4">
             <div className="flex items-center justify-between mb-3">
@@ -1231,20 +1270,13 @@ export function GbairaiCardMobile({
               <div className="bg-gray-800 rounded-lg p-3 border-l-4 border-orange-500">
                 <CommentItem
                   comment={repliesOverlay.parentComment}
-                  onReply={handleReplyToComment}
-                  onLike={handleLikeComment}
-                  onToggleMenu={handleCommentMenuToggle}
-                  onDelete={handleDeleteComment}
-                  onTranslate={handleTranslateComment}
-                  onReport={handleReportComment}
-                  isLiked={isCommentLikedByUser(repliesOverlay.parentComment.id)}
-                  likesCount={getCommentLikesCount(repliesOverlay.parentComment.id)}
-                  isMenuOpen={activeCommentMenu?.commentId === repliesOverlay.parentComment.id}
                   isOwner={repliesOverlay.parentComment.userId === user?.id}
-                  currentUser={user}
-                  showAsParent={true}
-                  isGuest={isGuest}
-                  onAuthRequired={onAuthRequired}
+                  onMenuToggle={handleCommentMenuToggle}
+                  isMenuOpen={activeCommentMenu?.commentId === repliesOverlay.parentComment.id}
+                  onDeleteComment={handleDeleteComment}
+                  onTranslateComment={handleTranslateComment}
+                  onReportComment={handleReportComment}
+                  onReplyToComment={handleReplyToComment}
                 />
               </div>
             )}
@@ -1262,21 +1294,13 @@ export function GbairaiCardMobile({
                 <div key={reply.id} className="pl-4">
                   <CommentItem
                     comment={reply}
-                    onReply={(comment, parentUsername) => handleReplyToComment(comment, parentUsername)}
-                    onLike={handleLikeComment}
-                    onToggleMenu={handleCommentMenuToggle}
-                    onDelete={handleDeleteComment}
-                    onTranslate={handleTranslateComment}
-                    onReport={handleReportComment}
-                    isLiked={isCommentLikedByUser(reply.id)}
-                    likesCount={getCommentLikesCount(reply.id)}
-                    isMenuOpen={activeCommentMenu?.commentId === reply.id}
                     isOwner={reply.userId === user?.id}
-                    currentUser={user}
-                    isReply={true}
-                    parentComment={repliesOverlay.parentComment}
-                    isGuest={isGuest}
-                    onAuthRequired={onAuthRequired}
+                    onMenuToggle={handleCommentMenuToggle}
+                    isMenuOpen={activeCommentMenu?.commentId === reply.id}
+                    onDeleteComment={handleDeleteComment}
+                    onTranslateComment={handleTranslateComment}
+                    onReportComment={handleReportComment}
+                    onReplyToComment={handleReplyToComment}
                   />
                 </div>
               ))
@@ -1312,6 +1336,7 @@ export function GbairaiCardMobile({
                     handleCommentSubmit();
                   }
                 }}
+                inputMode="text"
               />
               <Button
                 onClick={handleCommentSubmit}

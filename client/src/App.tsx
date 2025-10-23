@@ -60,6 +60,7 @@ import NotificationsPage from "@/pages/notifications-page";
 import BlockedUsersPage from "@/pages/blocked-users-page";
 import ResetPasswordPage from "@/pages/reset-password-page";
 import GbairaiPage from "@/pages/gbairai-page";
+import GbairaiCommentsPage from "@/pages/gbairai-comments-page";
 import AdminPage from "@/pages/admin-page";
 import NotFound from "@/pages/not-found";
 import PrivacyPolicyPage from "@/pages/privacy-policy-page";
@@ -80,6 +81,7 @@ function Router() {
       <ProtectedRoute path="/blocked-users" component={BlockedUsersPage} />
       <ProtectedRoute path="/notifications" component={NotificationsPage} />
       <ProtectedRoute path="/gbairai/:id" component={GbairaiPage} />
+      <ProtectedRoute path="/gbairai/:id/comments" component={GbairaiCommentsPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
       <ProtectedRoute path="/moderation-test" component={ModerationTestPage} />
       <Route path="/auth" component={AuthPage} />
