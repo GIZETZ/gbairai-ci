@@ -708,11 +708,67 @@ export function GbairaiCardMobile({
       );
       interactionElements.forEach(el => el.remove());
 
+      // Appliquer un style temporaire pour une capture au style sombre (comme la carte de référence)
+      tempCard.classList.add('share-capture');
+
+      const styleEl = document.createElement('style');
+      styleEl.setAttribute('data-share-capture-style', 'true');
+      styleEl.textContent = `
+        .share-capture {
+          background: radial-gradient(120% 120% at 20% 0%, #0f141b 0%, #0b0f14 60%, #070a0e 100%) !important;
+          color: #ffffff !important;
+          border-radius: 16px !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+          overflow: hidden !important;
+        }
+        /* Global colors */
+        .share-capture * { color: #ffffff !important; }
+        .share-capture .text-gray-900, .share-capture .dark\\:text-white, .share-capture .text-white { color: #ffffff !important; }
+        .share-capture .text-gray-600, .share-capture .text-gray-500, .share-capture .dark\\:text-gray-400 { color: rgba(255,255,255,0.75) !important; }
+        .share-capture .bg-white, .share-capture .dark\\:bg-gray-900, .share-capture .bg-gray-900, .share-capture .bg-gray-800 { background-color: transparent !important; }
+        .share-capture .border, .share-capture .border-gray-200, .share-capture .dark\\:border-gray-700 { border-color: rgba(255,255,255,0.12) !important; }
+        .share-capture svg { color: #ffffff !important; fill: currentColor; stroke: currentColor; }
+
+        /* Hide non-essential UI for capture */
+        .share-capture .emotion-header,
+        .share-capture .gbairai-footer,
+        .share-capture .actions,
+        .share-capture .dropdown-menu,
+        .share-capture .more-button,
+        .share-capture [data-interaction="true"] {
+          display: none !important;
+        }
+
+        /* Center main content */
+        .share-capture .content {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+          align-items: center !important;
+          padding: 32px !important;
+          height: 100% !important;
+          min-height: 100% !important;
+        }
+
+        /* Style the Gbairai text like the reference: centered, bold, larger */
+        .share-capture .gbairai-content {
+          text-align: center !important;
+          font-weight: 800 !important;
+          font-size: 28px !important;
+          line-height: 1.3 !important;
+          letter-spacing: -0.01em !important;
+          max-width: 85% !important;
+          margin: 0 auto !important;
+        }
+      `;
+      document.head.appendChild(styleEl);
+
       // Ajouter la copie temporaire au DOM (invisible)
       tempCard.style.position = 'absolute';
       tempCard.style.left = '-9999px';
       tempCard.style.width = '400px';
-      tempCard.style.background = 'white';
+      tempCard.style.height = '520px';
+      tempCard.style.background = 'transparent';
       tempCard.style.padding = '20px';
       tempCard.style.borderRadius = '12px';
       tempCard.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
@@ -720,7 +776,7 @@ export function GbairaiCardMobile({
 
       // Capturer l'image
       const canvas = await html2canvas(tempCard, {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#0b0f14',
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -728,8 +784,11 @@ export function GbairaiCardMobile({
         height: tempCard.offsetHeight
       });
 
-      // Nettoyer l'élément temporaire
+      // Nettoyer l'élément temporaire et les styles injectés
       document.body.removeChild(tempCard);
+      if (styleEl.parentNode) {
+        styleEl.parentNode.removeChild(styleEl);
+      }
 
       // Convertir en blob
       return new Promise<Blob | null>((resolve) => {
@@ -750,6 +809,7 @@ export function GbairaiCardMobile({
     }
     try {
       const shareUrl = `${window.location.origin}/gbairai/${gbairai.id}`;
+      const sharePrefix = 'Ehh tu savais?';
       const shareText = `${gbairai.content.substring(0, 100)}${gbairai.content.length > 100 ? '...' : ''}`;
 
       // Capturer l'image de la carte
@@ -757,7 +817,7 @@ export function GbairaiCardMobile({
 
       const shareData: any = {
         title: 'Gbairai - Découvrez cette histoire',
-        text: shareText,
+        text: `${sharePrefix}\n\n${shareText}`,
         url: shareUrl,
       };
 
@@ -770,8 +830,8 @@ export function GbairaiCardMobile({
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        // Fallback: copier le lien et télécharger l'image si possible
-        await navigator.clipboard.writeText(shareUrl);
+        // Fallback: copier un message + le lien et télécharger l'image si possible
+        await navigator.clipboard.writeText(`${sharePrefix}\n${shareUrl}`);
 
         if (imageBlob) {
           const url = URL.createObjectURL(imageBlob);

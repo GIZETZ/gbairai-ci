@@ -93,7 +93,8 @@ export function ShareToConversationModal({ gbairaiId, gbairaiContent, trigger }:
 
       // Envoyer le message avec le lien interne du Gbairai
       const internalLink = `/gbairai/${gbairaiId}`;
-      const messageContent = `📩 Gbairai partagé: "${gbairaiContent.substring(0, 50)}${gbairaiContent.length > 50 ? '...' : ''}"\n\n🔗 Voir le Gbairai: ${internalLink}`;
+      const sharePrefix = 'Ehh tu savais?';
+      const messageContent = `${sharePrefix}\n📩 Gbairai partagé: "${gbairaiContent.substring(0, 50)}${gbairaiContent.length > 50 ? '...' : ''}"\n🔗 Voir le Gbairai: ${internalLink}`;
       
       const response = await apiRequest("POST", `/api/conversations/${finalConversationId}/messages`, {
         content: messageContent,

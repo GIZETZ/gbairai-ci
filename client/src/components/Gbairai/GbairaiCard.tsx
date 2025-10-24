@@ -124,13 +124,14 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/gbairai/${gbairai.id}`;
+    const sharePrefix = 'Ehh tu savais?';
     
     // Essayer d'utiliser l'API Web Share si disponible
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'Gbairai',
-          text: `Découvrez ce Gbairai: "${gbairai.content}"`,
+          text: `${sharePrefix}\nDécouvrez ce Gbairai: "${gbairai.content}"`,
           url: shareUrl
         });
         return;
@@ -141,10 +142,10 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
     
     // Fallback: copier le lien
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(`${sharePrefix}\n${shareUrl}`);
       toast({
         title: "Lien copié",
-        description: "Le lien du Gbairai a été copié dans le presse-papier"
+        description: "Le message et le lien du Gbairai ont été copiés dans le presse-papiers"
       });
     } catch (error) {
       toast({
