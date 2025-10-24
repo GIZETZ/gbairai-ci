@@ -65,26 +65,36 @@ export function CommentItem({
           <User className="w-4 h-4" />
           <span className="author-name">{comment.user?.username || 'Utilisateur'}</span>
           <span className="comment-time">
-            {formatDistanceToNow(new Date(comment.createdAt), { 
-              addSuffix: true,
-              locale: fr 
-            })}
+            {(() => {
+              try {
+                const d = comment?.createdAt ? new Date(comment.createdAt) : null;
+                if (!d || isNaN(d.getTime())) return 'à l\'instant';
+                return formatDistanceToNow(d, { addSuffix: true, locale: fr });
+              } catch {
+                return 'à l\'instant';
+              }
+            })()}
           </span>
         </div>
         <div className="comment-content">
           {comment.content}
         </div>
 
-        {/* Bouton répondre pour les non-propriétaires */}
-        {!isOwner && (
+        {/* Actions sous le commentaire */}
+        <div className="flex items-center gap-6 text-sm text-gray-400">
           <button
             onClick={() => onReplyToComment(comment.id, comment.user?.username || 'Utilisateur')}
-            className="comment-reply-btn"
+            className="hover:text-white focus:outline-none"
           >
-            <Reply className="w-3 h-3" />
             Répondre
           </button>
-        )}
+          <button
+            onClick={onTranslateComment}
+            className="hover:text-white focus:outline-none"
+          >
+            Voir la traduction
+          </button>
+        </div>
       </div>
       
       {/* Menu déroulant */}
@@ -125,10 +135,15 @@ export function CommentItem({
                 <User className="w-3 h-3" />
                 <span className="reply-author-name">{reply.user?.username || 'Utilisateur'}</span>
                 <span className="reply-time">
-                  {formatDistanceToNow(new Date(reply.createdAt), { 
-                    addSuffix: true,
-                    locale: fr 
-                  })}
+                  {(() => {
+                    try {
+                      const d = reply?.createdAt ? new Date(reply.createdAt) : null;
+                      if (!d || isNaN(d.getTime())) return 'à l\'instant';
+                      return formatDistanceToNow(d, { addSuffix: true, locale: fr });
+                    } catch {
+                      return 'à l\'instant';
+                    }
+                  })()}
                 </span>
               </div>
               <div className="reply-content">

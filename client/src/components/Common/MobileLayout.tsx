@@ -13,9 +13,11 @@ interface MobileLayoutProps {
   children: ReactNode;
   className?: string;
   showTopButtons?: boolean;
+  renderBelowSubtitle?: ReactNode;
+  renderRightExtras?: ReactNode;
 }
 
-export function MobileLayout({ children, className, showTopButtons = true }: MobileLayoutProps) {
+export function MobileLayout({ children, className, showTopButtons = true, renderBelowSubtitle, renderRightExtras }: MobileLayoutProps) {
   const { user } = useAuth();
   const [isNavVisible, setIsNavVisible] = useState(true);
 
@@ -51,20 +53,25 @@ export function MobileLayout({ children, className, showTopButtons = true }: Mob
   });
 
   // Compter les notifications non lues
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 px-4 py-3 safe-area-pt">
+      <div className="fixed top-0 left-0 right-0 z-40 bg-background border-b border-border px-4 py-3 safe-area-pt">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-black dark:text-white">Gbairai</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Racont' ton Gbairai, on t'écoute sans te voir.</p>
+            <h1 className="text-xl font-bold text-foreground">Gbairai</h1>
+            <p className="text-sm text-muted-foreground">Racont' ton Gbairai, on t'écoute sans te voir.</p>
+            {renderBelowSubtitle && (
+              <div className="mt-2 flex justify-center">
+                {renderBelowSubtitle}
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <Link href="/notifications">
-              <Button variant="ghost" size="sm" className="text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 relative">
+              <Button variant="ghost" size="sm" className="hover:bg-muted relative">
                 <Bell className="h-5 w-5" />
                 {/* Badge de notification dynamique */}
                 {unreadCount > 0 && (
@@ -75,10 +82,11 @@ export function MobileLayout({ children, className, showTopButtons = true }: Mob
               </Button>
             </Link>
             <Link href="/messages">
-              <Button variant="ghost" size="sm" className="text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+              <Button variant="ghost" size="sm" className="hover:bg-muted">
                 <MessageCircle className="h-5 w-5" />
               </Button>
             </Link>
+            {renderRightExtras}
           </div>
         </div>
       </div>
@@ -93,7 +101,7 @@ export function MobileLayout({ children, className, showTopButtons = true }: Mob
 
       {/* Bottom Navigation */}
       <div className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300",
+        "fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 bg-background border-t border-border",
         isNavVisible ? "translate-y-0" : "translate-y-full"
       )}>
         <MobileNavigation />

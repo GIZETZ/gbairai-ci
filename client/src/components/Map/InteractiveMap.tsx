@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Filter, RefreshCw, Move } from "lucide-react";
+import { MapPin, Search, Filter, RefreshCw, Move, Eye, EyeOff, Info } from "lucide-react";
 
 // Import Leaflet types
 declare global {
@@ -59,6 +59,8 @@ export function InteractiveMap({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [controlsPosition, setControlsPosition] = useState({ x: 16, y: 16 });
+  const [controlsCollapsed, setControlsCollapsed] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
 
   const { data: gbairais, isLoading: gbairaisLoading, refetch } = useGbairais();
   const { location, getCurrentLocation, isLoading: locationLoading } = useLocation();
@@ -398,7 +400,7 @@ export function InteractiveMap({
       {/* Map Controls */}
       <div 
         ref={commentBoxRef}
-        className="absolute bg-gray-800 rounded-lg shadow-lg p-4 z-10 w-64 cursor-move"
+        className="absolute bg-gray-800 rounded-lg shadow-lg p-3 z-10 w-56 cursor-move"
         style={{ 
           left: `${controlsPosition.x}px`, 
           top: `${controlsPosition.y}px`,
@@ -408,94 +410,107 @@ export function InteractiveMap({
         onTouchStart={handleTouchStart}
       >
         {/* Header avec icône de déplacement */}
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-600">
-          <h3 className="text-white font-medium text-sm">Contrôles de la carte</h3>
-          <Move className="w-4 h-4 text-gray-400" />
-        </div>
-
-        {/* Search */}
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Rechercher un lieu..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-            />
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-600">
+          <h3 className="text-white font-medium text-xs">Contrôles de la carte</h3>
+          <div className="flex items-center gap-2">
+            <button
+              className="text-gray-300 hover:text-white"
+              onClick={(e) => { e.stopPropagation(); setControlsCollapsed(v => !v); }}
+              title={controlsCollapsed ? 'Afficher les contrôles' : 'Masquer les contrôles'}
+            >
+              {controlsCollapsed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </button>
+            <Move className="w-4 h-4 text-gray-400" />
           </div>
         </div>
 
-        {/* Emotion Filters */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Filtrer par émotion
-          </label>
-          <div className="grid grid-cols-4 gap-2">
-            {Object.entries(emotionColors).map(([emotion, color]) => (
+        {!controlsCollapsed && (
+          <>
+            {/* Search */}
+            <div className="mb-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Rechercher un lieu..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400 h-8 text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Emotion Filters */}
+            <div className="mb-3">
+              <label className="block text-xs font-medium text-gray-300 mb-2">
+                Filtrer par émotion
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {Object.entries(emotionColors).map(([emotion, color]) => (
+                  <Button
+                    key={emotion}
+                    variant="ghost"
+                    size="sm"
+                    className={`w-7 h-7 p-0 rounded-full transition-all ${
+                      selectedEmotion === emotion ? 'ring-2 ring-blue-400 shadow-lg' : ''
+                    }`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => handleEmotionFilter(emotion)}
+                    title={emotion}
+                    disabled={isGuest}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
               <Button
-                key={emotion}
-                variant="ghost"
+                onClick={handleShowAll}
+                variant="outline"
                 size="sm"
-                className={`w-8 h-8 p-0 rounded-full transition-all ${
-                  selectedEmotion === emotion ? 'ring-2 ring-blue-400 shadow-lg' : ''
-                }`}
-                style={{ backgroundColor: color }}
-                onClick={() => handleEmotionFilter(emotion)}
-                title={emotion}
-                disabled={isGuest}
-              />
-            ))}
-          </div>
-        </div>
+                className="flex-1 bg-gray-700 border-gray-600 text-white hover:bg-gray-600 h-8 text-xs"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Tout afficher
+              </Button>
+              <Button
+                onClick={handleMyLocation}
+                disabled={locationLoading || isGuest}
+                size="sm"
+                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white h-8 text-xs"
+              >
+                <MapPin className="w-4 h-4 mr-1" />
+                {locationLoading ? 'Localisation...' : 'Ma position'}
+              </Button>
+            </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <Button
-            onClick={handleShowAll}
-            variant="outline"
-            size="sm"
-            className="flex-1 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            Tout afficher
-          </Button>
-          <Button
-            onClick={handleMyLocation}
-            disabled={locationLoading || isGuest}
-            size="sm"
-            className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
-          >
-            <MapPin className="w-0.1 h-0.1 mr-0.1" />
-            {locationLoading ? 'Localisation...' : 'Ma position'}
-          </Button>
-        </div>
+            {/* GPS Accuracy Button */}
+            <div className="mt-2">
+              <Button
+                onClick={handleMyLocation}
+                disabled={locationLoading || isGuest}
+                variant="outline"
+                size="sm"
+                className="w-full bg-gray-700 border-gray-600 text-white hover:bg-gray-600 h-8 text-xs"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${locationLoading ? 'animate-spin' : ''}`} />
+                Actualiser GPS
+              </Button>
+            </div>
 
-        {/* GPS Accuracy Button */}
-        <div className="mt-2">
-          <Button
-            onClick={handleMyLocation}
-            disabled={locationLoading || isGuest}
-            variant="outline"
-            size="sm"
-            className="w-full bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${locationLoading ? 'animate-spin' : ''}`} />
-            Actualiser GPS
-          </Button>
-        </div>
-
-        {/* Refresh Button */}
-        <Button
-          onClick={() => refetch()}
-          variant="outline"
-          size="sm"
-          className="w-full mt-2 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
-          disabled={gbairaisLoading || isGuest}
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${gbairaisLoading ? 'animate-spin' : ''}`} />
-          Actualiser
-        </Button>
+            {/* Refresh Button */}
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 bg-gray-700 border-gray-600 text-white hover:bg-gray-600 h-8 text-xs"
+              disabled={gbairaisLoading || isGuest}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${gbairaisLoading ? 'animate-spin' : ''}`} />
+              Actualiser
+            </Button>
+          </>
+        )}
 
         {/* Selected Emotion Badge */}
         {selectedEmotion && (
@@ -507,21 +522,33 @@ export function InteractiveMap({
         )}
       </div>
 
-      {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 bg-gray-800 rounded-lg shadow-lg p-3 z-10">
-        <h4 className="text-sm font-medium text-gray-300 mb-2">Légende des émotions</h4>
-        <div className="space-y-1">
-          {Object.entries(emotionColors).map(([emotion, color]) => (
-            <div key={emotion} className="flex items-center space-x-2">
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: color }}
-              />
-              <span className="text-xs text-gray-300 capitalize">{emotion}</span>
-            </div>
-          ))}
-        </div>
+      {/* Map Legend Toggle Button */}
+      <div className="absolute bottom-4 left-4 z-10">
+        <button
+          className="bg-gray-800 text-white text-xs rounded-full px-3 py-1 shadow hover:bg-gray-700 flex items-center gap-1"
+          onClick={() => setShowLegend(v => !v)}
+        >
+          <Info className="w-3 h-3" /> {showLegend ? 'Masquer la légende' : 'Légende'}
+        </button>
       </div>
+
+      {/* Map Legend */}
+      {showLegend && (
+        <div className="absolute bottom-16 left-4 bg-gray-800 rounded-lg shadow-lg p-3 z-10 w-56">
+          <h4 className="text-xs font-medium text-gray-300 mb-2">Légende des émotions</h4>
+          <div className="space-y-1">
+            {Object.entries(emotionColors).map(([emotion, color]) => (
+              <div key={emotion} className="flex items-center space-x-2">
+                <div
+                  className="w-3.5 h-3.5 rounded-full"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-xs text-gray-300 capitalize">{emotion}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

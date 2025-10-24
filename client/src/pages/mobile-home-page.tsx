@@ -5,7 +5,7 @@ import { GbairaiFilters } from "@/components/Common/GbairaiFilters";
 import { useGbairais, useGbairaiComments } from "@/hooks/useGbairais";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Plus, MessageSquare, Heart, User, Bell, LogIn, UserPlus, X } from "lucide-react";
+import { Plus, MessageSquare, Heart, User, Bell, LogIn, UserPlus, X, Download } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,7 +42,92 @@ export default function MobileHomePage() {
 
   // Tous les hooks d'état d'abord
   const [filters, setFilters] = useState(loadFiltersFromStorage);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gbairai-current-index');
+      const n = saved != null ? Number(saved) : 0;
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  // PWA install prompt handling
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
+  const [isIosEnv, setIsIosEnv] = useState<boolean>(false);
+
+  const isAppInstalled = () => {
+    try {
+      const standalone = (window.navigator as any).standalone;
+      const displayMode = window.matchMedia('(display-mode: standalone)').matches;
+      return !!standalone || displayMode;
+    } catch {
+      return false;
+    }
+  };
+
+  const isIos = () => {
+    try {
+      const ua = window.navigator.userAgent || '';
+      return /iPhone|iPad|iPod/i.test(ua);
+    } catch {
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('pwa-install-dismissed') === 'true';
+    setIsIosEnv(isIos());
+    const checkInstalledAndMaybeShow = () => {
+      const installed = isAppInstalled();
+      const canPrompt = !!deferredPrompt;
+      const shouldShow = !installed && !dismissed && (canPrompt || isIos());
+      setShowInstallBanner(shouldShow);
+    };
+
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      const dismissedNow = localStorage.getItem('pwa-install-dismissed') === 'true';
+      if (!isAppInstalled() && !dismissedNow) {
+        setShowInstallBanner(true);
+      }
+    };
+
+    const handleAppInstalled = () => {
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    checkInstalledAndMaybeShow();
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, [deferredPrompt]);
+
+  const handleInstallClick = async () => {
+    try {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallBanner(false);
+      }
+      setDeferredPrompt(null);
+    } catch {}
+  };
+
+  const handleDismissInstall = () => {
+    setShowInstallBanner(false);
+    try { localStorage.setItem('pwa-install-dismissed', 'true'); } catch {}
+  };
+
+  const [logoVisible, setLogoVisible] = useState(true);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragPosition, setDragPosition] = useState({ x: 16, y: typeof window !== 'undefined' ? window.innerHeight * 0.85 : 600 });
@@ -62,6 +147,7 @@ export default function MobileHomePage() {
 
   // Refs
   const commentBoxRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Queries React Query
   const { data: gbairais, isLoading, refetch } = useGbairais(filters);
@@ -80,7 +166,7 @@ export default function MobileHomePage() {
   const { data: currentComments = [] } = useGbairaiComments(currentGbairai?.id || 0);
 
   // Variables dérivées
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
 
   // Fonction pour gérer les actions nécessitant une authentification
   const handleAuthRequired = () => {
@@ -131,12 +217,30 @@ export default function MobileHomePage() {
     }
   }, [setLocation]);
 
-  // Reset to first gbairai when data changes
+  // Clamp index when data changes, do not reset progress
   useEffect(() => {
-    if (gbairais && gbairais.length > 0) {
-      setCurrentIndex(0);
-    }
+    if (!gbairais || gbairais.length === 0) return;
+    setCurrentIndex(prev => {
+      if (prev < 0) return 0;
+      if (prev >= gbairais.length) return gbairais.length - 1;
+      return prev;
+    });
   }, [gbairais]);
+
+  // Persist current index
+  useEffect(() => {
+    try { localStorage.setItem('gbairai-current-index', String(currentIndex)); } catch {}
+  }, [currentIndex]);
+
+  // Keep scroll position in sync with currentIndex
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const targetTop = currentIndex * el.clientHeight;
+    if (Math.abs(el.scrollTop - targetTop) > 1) {
+      el.scrollTo({ top: targetTop, behavior: 'instant' as any });
+    }
+  }, [currentIndex, gbairais]);
 
   // Fonctions de gestion des événements de drag/drop
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -205,9 +309,9 @@ export default function MobileHomePage() {
   const filteredGbairais = useMemo(() => {
     let filtered = gbairais || [];
 
-    if (filters.location && filters.location.city) {
+    if (filters.location && (filters.location as any).city) {
       filtered = filtered.filter(gbairai => {
-        return gbairai.location?.city === filters.location.city;
+        return (gbairai as any).location?.city === (filters.location as any).city;
       });
     }
 
@@ -278,90 +382,86 @@ export default function MobileHomePage() {
   }
 
   return (
-    <MobileLayout className="p-0" showTopButtons={false}>
+    <MobileLayout 
+      className="p-0" 
+      showTopButtons={false}
+      renderRightExtras={
+        <GbairaiFilters 
+          currentFilters={filters}
+          onFilterChange={handleFilterChange}
+          hideWhenCommentsOpen={isCommentsOpen}
+          headerPlacement
+        />
+      }
+    >
       {/* Main Content */}
-      <div className="h-full relative flex justify-center bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700" style={{ 
+      <div className="h-full relative flex justify-center bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-300 dark:bg-background dark:text-foreground" style={{ 
         alignItems: 'center', 
         paddingTop: '10vh'
       }}>
-        {/* Banner pour les visiteurs non connectés */}
-        {!user && showWelcomeBanner && (
-          <div className="fixed left-0 right-0 z-50 pt-20 md:pt-8 px-6 md:px-12" style={{ top: '0%', background: 'transparent' }}>
-            <div className="flex justify-end items-start mb-4">
-            </div>
-            <div className="space-y-6">
-              <div className="space-y-6">
-                <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 relative">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleHideWelcomeBanner}
-                    className="absolute top-2 right-2 h-6 w-6 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-200/50"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                  <CardContent className="p-4 text-center">
-                    <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                      🎉 Bienvenue sur Gbairai !
+        {/* Modal d'installation PWA centré */}
+        {showInstallBanner && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50" onClick={handleDismissInstall} />
+            <Card className="relative z-10 w-[92%] max-w-sm border-2 border-yellow-300 bg-white/95 dark:bg-gray-900/90 shadow-xl">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDismissInstall}
+                className="absolute top-2 right-2 h-6 w-6 p-0 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-200/50"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              <CardContent className="p-5 text-center">
+                {logoVisible && (
+                  <img
+                    src="/logo.png"
+                    alt="Gbairai"
+                    className="mx-auto mb-3 h-10 w-10 object-contain"
+                    onError={() => setLogoVisible(false)}
+                  />
+                )}
+                {deferredPrompt ? (
+                  <>
+                    <h2 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                      Installer l'application Gbairai
                     </h2>
-                    <p className="text-blue-700 dark:text-blue-300 mb-4 text-sm">
-                      Découvrez les émotions et actualités de la Côte d'Ivoire en temps réel. 
-                      Créez votre compte en 30 secondes pour participer !
+                    <p className="text-yellow-700 dark:text-yellow-300 mb-4 text-sm">
+                      Accédez à Gbairai plus rapidement depuis votre écran d'accueil et profitez d'une meilleure expérience.
                     </p>
                     <div className="flex gap-2 justify-center">
-                      <Link href="/auth">
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Créer un compte
-                        </Button>
-                      </Link>
-                      <Link href="/auth">
-                        <Button variant="outline" size="sm" className="border-blue-300 text-blue-700">
-                          <LogIn className="w-4 h-4 mr-2" />
-                          Se connecter
-                        </Button>
-                      </Link>
+                      <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white" onClick={handleInstallClick}>
+                        <Download className="w-4 h-4 mr-2" />
+                        Installer
+                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                      Ajouter à l'écran d'accueil (iOS)
+                    </h2>
+                    <div className="text-yellow-700 dark:text-yellow-300 mb-3 text-sm space-y-1 text-left">
+                      <p>1. Ouvrez le menu partage (icône carré avec flèche).</p>
+                      <p>2. Choisissez « Ajouter à l'écran d'accueil ».</p>
+                      <p>3. Confirmez pour installer Gbairai.</p>
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-4">
+                      Astuce: si l'option n'apparaît pas, faites défiler les actions.
+                    </div>
+                    <div className="flex gap-2 justify-center">
+                      <Button size="sm" variant="outline" onClick={handleDismissInstall}>
+                        J'ai compris
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 
-        {/* Filters */}
-        <div className="fixed left-0 right-0 z-50 pt-20 md:pt-8 px-6 md:px-12" style={{ top: (!user && showWelcomeBanner ? '15%' : '-30%'), background: 'transparent' }}>
-          <div className="flex justify-end items-start mb-4">
-            <div className="flex space-x-2">
-              {user ? (
-                <>
-                  <Link href="/messages">
-                    <Button size="sm" variant="outline" className="bg-white/95 backdrop-blur-sm border-yellow-300 shadow-lg hover:bg-white text-yellow-700">
-                      <MessageSquare className="w-4 h-4" />
-                    </Button>
-                  </Link>
-
-                  <Link href="/notifications">
-                    <Button size="sm" variant="outline" className="bg-white/95 backdrop-blur-sm border-yellow-300 shadow-lg hover:bg-white text-yellow-700 relative">
-                      <Bell className="w-4 h-4" />
-                      {unreadCount > 0 && (
-                        <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center p-0">
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </Badge>
-                      )}
-                    </Button>
-                  </Link>
-                </>
-              ) : null}
-            </div>
-          </div>
-
-          <GbairaiFilters 
-            currentFilters={filters}
-            onFilterChange={handleFilterChange}
-            hideWhenCommentsOpen={isCommentsOpen}
-          />
-        </div>
+        {/* Filters moved to header via renderBelowSubtitle */}
 
         {/* Gbairai Container - Rectangle with scroll snap */}
         <div 
@@ -372,8 +472,9 @@ export default function MobileHomePage() {
             overscrollBehavior: 'none',
             scrollSnapStop: 'always',
             overflow: isCommentsOpen ? 'hidden' : 'auto',
-            paddingTop: '120px' // Space for fixed filters
+            paddingTop: '96px'
           }}
+          ref={scrollContainerRef}
         >
           {filteredGbairais.map((gbairai, index) => (
             <div 

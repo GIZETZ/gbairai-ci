@@ -1071,7 +1071,9 @@ export function GbairaiCardMobile({
           {/* Footer avec meta info et actions */}
           <div className="gbairai-footer">
             <div className="meta">
-              <span>@{gbairai.user?.username || 'Anonyme'} • {timeAgo}</span>
+              <span>
+                @{gbairai.isAnonymous ? 'Anonyme' : (gbairai.user?.username || 'Utilisateur')} • {timeAgo}
+              </span>
             </div>
             
             <div className="actions">
@@ -1103,7 +1105,10 @@ export function GbairaiCardMobile({
                     <Share2 className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 shadow-lg"
+                >
                   <DropdownMenuItem onClick={handleExternalShare}>
                     <Share2 className="w-4 h-4 mr-2" />
                     Partager

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ interface GbairaiFiltersProps {
   isGuest?: boolean;
   onAuthRequired?: () => void;
   hideWhenCommentsOpen?: boolean;
+  headerPlacement?: boolean;
 }
 
 // Régions de Côte d'Ivoire
@@ -47,7 +48,8 @@ export function GbairaiFilters({
   currentFilters,
   isGuest = false,
   onAuthRequired,
-  hideWhenCommentsOpen = false
+  hideWhenCommentsOpen = false,
+  headerPlacement = false
 }: GbairaiFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -88,30 +90,158 @@ export function GbairaiFilters({
   };
 
   return (
-    <div className="mb-6 mt-8">
+    <div className={headerPlacement ? "" : "mb-6 mt-8"}>
       {/* Toggle Button */}
-      <div className="flex justify-center" style={{ transform: 'translateY(+350%)' }}>
+      <div className="flex justify-center" style={headerPlacement ? undefined : { transform: 'translateY(+350%)' }}>
         <Button
           variant="outline"
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`border-yellow-400 dark:border-gray-700 text-yellow-800 dark:text-white hover:bg-yellow-200 dark:hover:bg-gray-700 transition-all px-0.1 py-0.5 text-sm ${
+          aria-label="Afficher les filtres"
+          className={`border-yellow-400 dark:border-gray-700 text-yellow-800 dark:text-white hover:bg-yellow-200 dark:hover:bg-gray-700 transition-all px-2 py-0.1 text-[10px] tracking-widest ${
             isExpanded ? 'bg-yellow-200 dark:bg-gray-700' : 'bg-white/90 dark:bg-gray-800'
           }`}
         >
-          <Filter className="w-2 h-1 mr-1" />
-          Filtres
-          {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="ml-1 bg-blue-600 text-white text-xs">
-              {activeFiltersCount}
-            </Badge>
-          )}
-          {isExpanded && <span className="ml-1 text-xs">▲</span>}
-          {!isExpanded && <span className="ml-1 text-xs">▼</span>}
+          ...
         </Button>
       </div>
 
-      {/* Filters Panel */}
-      {isExpanded && (
+      {/* Overlay Panel when in headerPlacement */}
+      {isExpanded && headerPlacement && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setIsExpanded(false)} />
+          <Card className="relative z-10 w-[92%] max-w-md bg-white/95 dark:bg-gray-800 border-yellow-300 dark:border-gray-700">
+            <CardContent className="p-4 space-y-4">
+              {/* Location Search */}
+              <LocationSearch
+                onLocationFilter={(location) => updateFilter("location", location)}
+                currentLocationFilter={currentFilters.location || null}
+              />
+
+              {/* Region Filter */}
+              <div>
+                <label className="text-sm font-medium text-yellow-800 dark:text-white mb-2 flex items-center">
+                  <MapPin className="w-4 h-4 mr-2" /> Région
+                </label>
+                <Select
+                  value={currentFilters.region || "all"}
+                  onValueChange={(value) => updateFilter("region", value === "all" ? null : value)}
+                >
+                  <SelectTrigger className="bg-yellow-50 dark:bg-gray-700 border-yellow-300 dark:border-gray-600 text-yellow-800 dark:text-white">
+                    <SelectValue placeholder="Toutes les régions" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-700 border-yellow-300 dark:border-gray-600">
+                    <SelectItem value="all" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Toutes les régions</SelectItem>
+                    {IVORIAN_REGIONS.map((region) => (
+                      <SelectItem key={region.value} value={region.value} className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">
+                        {region.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Following Only Filter */}
+              <div>
+                <label className="text-sm font-medium text-yellow-800 dark:text-white mb-2 flex items-center">
+                  <Users className="w-4 h-4 mr-1" />
+                  Affichage
+                </label>
+                <Select
+                  value={currentFilters.followingOnly ? "true" : "false"}
+                  onValueChange={(value) => {
+                    if (isGuest) {
+                      onAuthRequired?.();
+                      return;
+                    }
+                    updateFilter("followingOnly", value === "true")
+                  }}
+                >
+                  <SelectTrigger className="bg-yellow-50 dark:bg-gray-700 border-yellow-300 dark:border-gray-600 text-yellow-800 dark:text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-700 border-yellow-300 dark:border-gray-600">
+                    <SelectItem value="false" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Tous les gbairais</SelectItem>
+                    <SelectItem value="true" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Uniquement mes abonnements</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Emotion Filter */}
+              <div>
+                <label className="text-sm font-medium text-yellow-800 dark:text-white mb-2 flex items-center">
+                  😊 Émotion
+                </label>
+                <Select
+                  value={currentFilters.emotion || "all"}
+                  onValueChange={(value) => updateFilter("emotion", value === "all" ? null : value)}
+                >
+                  <SelectTrigger className="bg-yellow-50 dark:bg-gray-700 border-yellow-300 dark:border-gray-600 text-yellow-800 dark:text-white">
+                    <SelectValue placeholder="Toutes les émotions" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-700 border-yellow-300 dark:border-gray-600">
+                    <SelectItem value="all" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Toutes les émotions</SelectItem>
+                    {EMOTIONS.map((emotion) => (
+                      <SelectItem key={emotion.value} value={emotion.value} className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">
+                        {emotion.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Active Filters Display */}
+              {activeFiltersCount > 0 && (
+                <div className="pt-2 border-t border-yellow-300 dark:border-gray-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-yellow-800 dark:text-white">Filtres actifs :</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearAllFilters}
+                      className="text-yellow-700 dark:text-gray-300 hover:text-yellow-900 dark:hover:text-white"
+                    >
+                      <X className="w-3 h-3 mr-1" />
+                      Tout effacer
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {currentFilters.region && (
+                      <Badge variant="secondary" className="bg-blue-600 text-white">
+                        📍 {IVORIAN_REGIONS.find(r => r.value === currentFilters.region)?.label}
+                      </Badge>
+                    )}
+                    {currentFilters.followingOnly && (
+                      <Badge variant="secondary" className="bg-purple-600 text-white">
+                        👥 Abonnements
+                      </Badge>
+                    )}
+                    {currentFilters.emotion && (
+                      <Badge variant="secondary" className="bg-green-600 text-white">
+                        {EMOTIONS.find(e => e.value === currentFilters.emotion)?.label}
+                      </Badge>
+                    )}
+                    {currentFilters.location && (
+                      <Badge variant="secondary" className="bg-orange-600 text-white">
+                        🌍 {currentFilters.location.city}
+                        {currentFilters.location.latitude && currentFilters.location.longitude && " (GPS)"}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={clearAllFilters}>Réinitialiser</Button>
+                <Button onClick={() => setIsExpanded(false)}>Fermer</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Inline Panel when not in headerPlacement */}
+      {isExpanded && !headerPlacement && (
         <Card className="mt-3 bg-white/95 dark:bg-gray-800 border-yellow-300 dark:border-gray-700" style={{ marginTop: '30%' }}>
           <CardContent className="p-4 space-y-4">
             {/* Location Search */}
@@ -119,120 +249,6 @@ export function GbairaiFilters({
               onLocationFilter={(location) => updateFilter("location", location)}
               currentLocationFilter={currentFilters.location || null}
             />
-
-            {/* Region Filter */}
-            <div>
-              <label className="text-sm font-medium text-yellow-800 dark:text-white mb-2 flex items-center">
-                <MapPin className="w-4 h-4 mr-1" />
-                Région de Côte d'Ivoire
-              </label>
-              <Select
-                value={currentFilters.region || "all"}
-                onValueChange={(value) => updateFilter("region", value === "all" ? null : value)}
-              >
-                <SelectTrigger className="bg-yellow-50 dark:bg-gray-700 border-yellow-300 dark:border-gray-600 text-yellow-800 dark:text-white">
-                  <SelectValue placeholder="Toutes les régions" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-700 border-yellow-300 dark:border-gray-600">
-                  <SelectItem value="all" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Toutes les régions</SelectItem>
-                  {IVORIAN_REGIONS.map((region) => (
-                    <SelectItem key={region.value} value={region.value} className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">
-                      {region.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Following Only Filter */}
-            <div>
-              <label className="text-sm font-medium text-yellow-800 dark:text-white mb-2 flex items-center">
-                <Users className="w-4 h-4 mr-1" />
-                Affichage
-              </label>
-              <Select
-                value={currentFilters.followingOnly ? "true" : "false"}
-                onValueChange={(value) => {
-                   if (isGuest) {
-                    onAuthRequired?.();
-                    return;
-                  }
-                  updateFilter("followingOnly", value === "true")
-                }}
-              >
-                <SelectTrigger className="bg-yellow-50 dark:bg-gray-700 border-yellow-300 dark:border-gray-600 text-yellow-800 dark:text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-700 border-yellow-300 dark:border-gray-600">
-                  <SelectItem value="false" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Tous les gbairais</SelectItem>
-                  <SelectItem value="true" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Uniquement mes abonnements</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Emotion Filter */}
-            <div>
-              <label className="text-sm font-medium text-yellow-800 dark:text-white mb-2 flex items-center">
-                😊 Émotion
-              </label>
-              <Select
-                value={currentFilters.emotion || "all"}
-                onValueChange={(value) => updateFilter("emotion", value === "all" ? null : value)}
-              >
-                <SelectTrigger className="bg-yellow-50 dark:bg-gray-700 border-yellow-300 dark:border-gray-600 text-yellow-800 dark:text-white">
-                  <SelectValue placeholder="Toutes les émotions" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-700 border-yellow-300 dark:border-gray-600">
-                  <SelectItem value="all" className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">Toutes les émotions</SelectItem>
-                  {EMOTIONS.map((emotion) => (
-                    <SelectItem key={emotion.value} value={emotion.value} className="text-yellow-800 dark:text-white hover:bg-yellow-100 dark:hover:bg-gray-600">
-                      {emotion.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Active Filters Display */}
-            {activeFiltersCount > 0 && (
-              <div className="pt-2 border-t border-yellow-300 dark:border-gray-600">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-yellow-800 dark:text-white">Filtres actifs :</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearAllFilters}
-                    className="text-yellow-700 dark:text-gray-300 hover:text-yellow-900 dark:hover:text-white"
-                  >
-                    <X className="w-3 h-3 mr-1" />
-                    Tout effacer
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {currentFilters.region && (
-                    <Badge variant="secondary" className="bg-blue-600 text-white">
-                      📍 {IVORIAN_REGIONS.find(r => r.value === currentFilters.region)?.label}
-                    </Badge>
-                  )}
-                  {currentFilters.followingOnly && (
-                    <Badge variant="secondary" className="bg-purple-600 text-white">
-                      👥 Abonnements
-                    </Badge>
-                  )}
-                  {currentFilters.emotion && (
-                    <Badge variant="secondary" className="bg-green-600 text-white">
-                      {EMOTIONS.find(e => e.value === currentFilters.emotion)?.label}
-                    </Badge>
-                  )}
-                  {currentFilters.location && (
-                    <Badge variant="secondary" className="bg-orange-600 text-white">
-                      🌍 {currentFilters.location.city}
-                      {currentFilters.location.latitude && currentFilters.location.longitude && " (GPS)"}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
       )}

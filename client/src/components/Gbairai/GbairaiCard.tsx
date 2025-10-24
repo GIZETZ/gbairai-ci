@@ -156,25 +156,25 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
   };
 
   return (
-    <Card className={`${compact ? 'border-l-4' : ''} border-l-${emotion.color.replace('bg-', '')} ${highlighted ? 'ring-2 ring-primary shadow-lg' : ''}`}>
-      <CardContent className="p-6 bg-[#23252f]">
+    <Card className={`${compact ? 'border-l-4' : ''} border-l-${emotion.color.replace('bg-', '')} ${highlighted ? 'ring-2 ring-primary shadow-lg' : ''} bg-card text-card-foreground`}>
+      <CardContent className="p-6">
         <div className="flex items-start space-x-3">
           {/* Avatar/Emotion */}
           <div className={`w-8 h-8 ${emotion.color} rounded-full flex items-center justify-center flex-shrink-0`}>
-            <span className="text-white text-sm">{emotion.emoji}</span>
+            <span className="text-foreground text-sm">{emotion.emoji}</span>
           </div>
 
           <div className="flex-1 min-w-0">
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-foreground">
                   {gbairai.isAnonymous ? "Utilisateur anonyme" : gbairai.user?.username || "Utilisateur"}
                 </span>
                 <Badge variant="secondary" className="text-xs">
                   {emotion.label}
                 </Badge>
-                <span className="text-xs text-gray-500">• {timeAgo}</span>
+                <span className="text-xs text-muted-foreground">• {timeAgo}</span>
               </div>
               
               {/* Actions Menu */}
@@ -206,7 +206,7 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
             </div>
 
             {/* Content */}
-            <div className="mb-3 text-[#f5f5f5] text-[30px] text-center" style={{ 
+            <div className="mb-3 text-foreground text-[30px] text-center" style={{ 
               textAlign: 'center',
               display: 'flex',
               alignItems: 'center',
@@ -219,7 +219,7 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <MapPin className="w-3 h-3" />
                 <span>{locationText}</span>
@@ -255,21 +255,21 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-gray-500 hover:text-green-600"
+                      className="h-6 px-2 text-muted-foreground hover:text-green-600"
                     >
                       <Share2 className="h-3 w-3" />
                       <span className="ml-1">{gbairai.sharesCount}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
-                    className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 shadow-lg"
                     style={{
                       zIndex: 9999
                     }}
                   >
                     <DropdownMenuItem 
                       onClick={handleShare}
-                      className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
+                      className="hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800"
                     >
                       <Share2 className="mr-2 h-4 w-4" />
                       Partager le lien
@@ -280,7 +280,7 @@ export function GbairaiCard({ gbairai, compact = false, highlighted = false }: G
                       trigger={
                         <DropdownMenuItem 
                           onSelect={(e) => e.preventDefault()}
-                          className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
+                          className="hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800"
                         >
                           <Send className="mr-2 h-4 w-4" />
                           Partager dans une discussion
