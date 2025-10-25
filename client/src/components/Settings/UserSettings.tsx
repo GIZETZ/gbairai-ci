@@ -14,8 +14,11 @@ import {
   Save, 
   ArrowLeft,
   Settings,
-  Palette
+  Palette,
+  Bell
 } from "lucide-react";
+import EnablePushButton from "@/components/Common/EnablePushButton";
+import { unsubscribeFromPush } from "@/serviceWorkerRegistration";
 
 interface UserSettingsProps {
   onBack: () => void;
@@ -188,6 +191,32 @@ export function UserSettings({ onBack }: UserSettingsProps) {
                 <SelectItem value="large">Grand</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications */}
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+            <Bell className="h-5 w-5" />
+            Notifications
+          </CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Activez les notifications push pour être alerté des nouveaux Gbairai, messages et commentaires.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <EnablePushButton />
+            <Button variant="outline" size="sm" onClick={async () => { await unsubscribeFromPush(); }}>
+              Désactiver
+            </Button>
+          </div>
+          <Separator className="bg-gray-200 dark:bg-gray-700" />
+          <div className="text-xs text-gray-600 dark:text-gray-400">
+            Astuce: Si les push ne sont pas disponibles (navigateur, permissions), l'application peut utiliser des
+            notifications locales lorsqu'elle est ouverte.
           </div>
         </CardContent>
       </Card>

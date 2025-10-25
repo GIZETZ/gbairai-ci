@@ -29,6 +29,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [isPostLoginLoading, setIsPostLoginLoading] = useState(false);
 
+  async function attemptEnablePushNotifications() {
+    try {
+      if (typeof window === 'undefined') return;
+      if (!('Notification' in window)) return;
+      // Si déjà accordé, s'assurer d'être souscrit côté serveur
+      const { requestNotificationPermission, subscribeToPushNotifications } = await import('@/serviceWorkerRegistration');
+      if (Notification.permission === 'granted') {
+        await subscribeToPushNotifications();
+        return;
+      }
+      // Demander la permission une fois juste après connexion
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        await subscribeToPushNotifications();
+      }
+    } catch (e) {
+      // Best-effort, ne bloque pas le login
+      console.warn('Activation push ignorée:', e);
+    }
+  }
+
   const {
     data: user,
     isLoading,
@@ -49,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Connexion réussie",
         description: `Bienvenue ${user.username} !`,
       });
+      // Activer les notifications par défaut (prompt auto)
+      attemptEnablePushNotifications();
     },
     onError: (error: Error) => {
       toast({
@@ -107,8 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (wasJustLoggedIn) {
           setIsPostLoginLoading(true);
           localStorage.setItem('user_session_started', 'true');
-  
-          // Afficher l'écran de chargement pendant 3 secondes
+
+          // Tenter d'activer les notifications au premier lancement de session
+          attemptEnablePushNotifications();
+
+          // Afficher l'écran de chargement pendant 15 secondes
           setTimeout(() => {
             setIsPostLoginLoading(false);
           }, 15000);

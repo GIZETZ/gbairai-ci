@@ -15,9 +15,10 @@ interface MobileLayoutProps {
   showTopButtons?: boolean;
   renderBelowSubtitle?: ReactNode;
   renderRightExtras?: ReactNode;
+  autoOffset?: boolean; // add spacers to avoid header/footer overlap
 }
 
-export function MobileLayout({ children, className, showTopButtons = true, renderBelowSubtitle, renderRightExtras }: MobileLayoutProps) {
+export function MobileLayout({ children, className, showTopButtons = true, renderBelowSubtitle, renderRightExtras, autoOffset = true }: MobileLayoutProps) {
   const { user } = useAuth();
   const [isNavVisible, setIsNavVisible] = useState(true);
 
@@ -90,13 +91,19 @@ export function MobileLayout({ children, className, showTopButtons = true, rende
         </div>
       </div>
 
+      {/* Spacer to push content below fixed header */}
+      {autoOffset && <div className="h-12" />}
+
       {/* Main Content */}
       <div className={cn(
-        "flex-1 pt-20 pb-20 safe-area-pt safe-area-pb",
+        "flex-1 py-0 safe-area-pt safe-area-pb",
         className
       )}>
         {children}
       </div>
+
+      {/* Bottom Spacer to avoid overlap with fixed bottom navigation */}
+      {autoOffset && <div className="h-20" />}
 
       {/* Bottom Navigation */}
       <div className={cn(

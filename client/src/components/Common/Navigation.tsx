@@ -11,8 +11,6 @@ import {
 import { LogOut, User, Settings } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBadge, useNotifications } from "./NotificationBadge";
-import EnablePushButton from "./EnablePushButton";
-import { unsubscribeFromPush } from "@/serviceWorkerRegistration";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -62,10 +60,6 @@ export function Navigation() {
               </span>
             )}
             <ThemeToggle />
-            <EnablePushButton />
-            <Button variant="ghost" size="sm" onClick={async () => { await unsubscribeFromPush(); }}>
-              Désactiver
-            </Button>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

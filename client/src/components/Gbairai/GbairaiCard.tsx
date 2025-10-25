@@ -39,7 +39,7 @@ export const emotionConfig = {
   "trop fan": { emoji: "❤️", color: "bg-pink-100", label: "Trop Fan" },
   "Mais Ahy?": { emoji: "🤔", color: "bg-purple-100", label: "Mais Ahy?" },
   "Légé": { emoji: "😌", color: "bg-green-100", label: "Légé" },
-  "inclassable": { emoji: "🎨", color: "bg-orange-100", label: "Inclassable" },
+  "Personalisé": { emoji: "🎨", color: "bg-orange-100", label: "Personalisé" },
 };
 
 export const getEmotionDisplay = (emotion: string, metadata?: any) => {
@@ -48,7 +48,7 @@ export const getEmotionDisplay = (emotion: string, metadata?: any) => {
     const customEmoji = metadata?.customEmoji || "🎨";
     return { emoji: customEmoji, color: "bg-orange-100", label: customEmotion };
   }
-  return emotionConfig[emotion as keyof typeof emotionConfig] || emotionConfig.inclassable;
+  return emotionConfig[emotion as keyof typeof emotionConfig] || emotionConfig.Personalisé;
 };
 
 export function GbairaiCard({ gbairai, compact = false, highlighted = false }: GbairaiCardProps) {

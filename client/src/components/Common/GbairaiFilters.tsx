@@ -40,7 +40,7 @@ const EMOTIONS = [
   { value: "trop fan", label: "❤️ Trop Fan" },
   { value: "Mais Ahy?", label: "🤔 Mais Ahy?" },
   { value: "Légé", label: "😌 Légé" },
-  { value: "inclassable", label: "🎨 Inclassable" }
+  { value: "Personalisé", label: "🎨 Personalisé" }
 ];
 
 export function GbairaiFilters({ 

@@ -37,9 +37,9 @@ export function CustomEmotionEditor({ isOpen, onClose, onSave }: CustomEmotionEd
   };
 
   const suggestions = [
-    "Motivé", "Nostalgique", "Inspiré", "Déçu", "Fier", "Anxieux", 
-    "Surpris", "Reconnaissant", "Frustré", "Optimiste", "Mélancolique",
-    "Euphorique", "Pensif", "Confiant", "Inquiet", "Satisfait"
+    "En chékété", "ehh", "Inspiré", "Dégba", "enjaillé", "Tchai", 
+    "LOGBOENNT", "Reconnaissant", "Frustré", "YAPADRA", "Hum.. wai",
+    "Héé djaa", "Attend?", "Confiant", "Tchie", "C'est Zooo"
   ];
 
   return (
@@ -66,12 +66,11 @@ export function CustomEmotionEditor({ isOpen, onClose, onSave }: CustomEmotionEd
           <Card className="border-orange-200 bg-orange-50">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm text-orange-800">
-                💡 Exprime-toi librement en nouchi !
+                💡 Exprime-toi librement en nouchi hein!
               </CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-orange-700">
-              Crée une émotion unique qui correspond exactement à ce que tu ressens. 
-              Utilise le nouchi ivoirien pour que ce soit authentique !
+              Tu peux créer ton émotion 😌 
             </CardContent>
           </Card>
 
@@ -84,7 +83,7 @@ export function CustomEmotionEditor({ isOpen, onClose, onSave }: CustomEmotionEd
               id="emotion"
               value={emotion}
               onChange={(e) => setEmotion(e.target.value)}
-              placeholder="Ex: Gbagba, Tchatché, Dèh..."
+              placeholder="..."
               className="border-orange-200 focus:border-orange-500"
               maxLength={20}
             />
@@ -94,13 +93,13 @@ export function CustomEmotionEditor({ isOpen, onClose, onSave }: CustomEmotionEd
           <div className="space-y-2">
             <Label htmlFor="description" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              Description de ton ressenti
+              Decrit un peu!
             </Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décris ce que tu ressens avec cette émotion... Ex: 'C'est quand tu es dans un état où tu sais pas si tu dois rire ou pleurer, c'est mélangé quoi'"
+              placeholder="Genre.."
               className="border-orange-200 focus:border-orange-500 min-h-[80px]"
               maxLength={150}
             />

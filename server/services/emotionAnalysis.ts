@@ -126,7 +126,7 @@ Analyse l'émotion principale de ce texte en tenant compte du contexte ivoirien 
 
 "${text}"
 
-Émotions possibles : joie, colère, tristesse, amour, suspens, calme, inclassable
+Émotions possibles : joie, colère, tristesse, amour, suspens, calme, Personalisé
 
 Réponds au format JSON :
 {
@@ -154,7 +154,7 @@ Prends en compte les expressions ivoiriennes typiques :
 - "Ça me chauffe" = colère, énervement
 - "J'ai le cœur serré" = tristesse
 - "Mon dja" = amour, affection
-- "Gbagba" = problème, suspens
+- "Ramba" = problème, suspens
 `;
   }
 
@@ -204,16 +204,51 @@ Prends en compte les expressions ivoiriennes typiques :
     const suggestions: EmotionSuggestion[] = [];
     const lowerText = text.toLowerCase();
 
-    // Analyse basée sur des mots-clés simples
+    // Analyse d'émotions améliorée (30 expressions par type)
     const emotionKeywords = {
-      'joie': ['content', 'heureux', 'joie', 'cool', 'super', 'bien', 'génial', 'magnifique', 'belle', 'beau'],
-      'amour': ['amour', 'aimer', 'cœur', 'chéri', 'mon dja', 'ma go', 'amoureux', 'couple'],
-      'tristesse': ['triste', 'pleure', 'mal', 'douleur', 'mort', 'partir', 'manque', 'seul'],
-      'colère': ['énervé', 'fâché', 'rage', 'colère', 'chauffe', 'problème', 'con', 'fou'],
-      'calme': ['calme', 'tranquille', 'paix', 'repos', 'détente', 'cool', 'ça va'],
-      'suspens': ['attendre', 'voir', 'peut-être', 'bientôt', 'savoir', 'gbagba', 'quoi'],
-      'enjaillé': ['fête', 'danse', 'musique', 'sortie', 'ambiance', 'wesh', 'enjaillé']
+      'joie': [
+        'content', 'heureux', 'joie', 'cool', 'super', 'bien', 'génial', 'magnifique', 'belle', 'beau',
+        'souriant', 'trop bien', 'formidable', 'extra', 'incroyable', 'parfait', 'youpi', 'yeah', 'excellent', 'agréable',
+        'kiffant', 'plaisir', 'sympa', 'délire', 'top', 'satisfait', 'confiant', 'sourire', 'motivé', 'rayonnant'
+      ],
+
+      'amour': [
+        'amour', 'aimer', 'cœur', 'chéri', 'ma go', 'mon gars', 'amoureux', 'couple', 'bébé', 'crush',
+        'je t’aime', 'adorer', 'man', 'ma vie', 'précieux', 'je pense à toi', 'mon cœur', 'miss you', 'love', '❤️',
+        '💕', '💞', '💋', 'tendre', 'affection', 'romantique', 'passion', 'séduction', 'flirt', 'âme sœur', 'belle relation'
+      ],
+
+      'tristesse': [
+        'triste', 'pleure', 'mal', 'douleur', 'mort', 'partir', 'manque', 'seul', 'vide', 'déprime',
+        'perdu', 'fatigué', 'démoralisé', 'abattu', 'larmes', 'chagrin', 'déçu', 'blessé', 'nostalgie', 'souffrir',
+        '😢', '😭', '💔', 'solitude', 'sans toi', 'désespoir', 'malheur', 'tristement', 'affaibli', 'abandon'
+      ],
+
+      'colère': [
+        'énervé', 'fâché', 'rage', 'colère', 'chauffe', 'problème', 'con', 'fou', 'haine', 'exploser',
+        'marre', 'bordel', 'c’est trop', 'trop chiant', 'dégouté', 'craquer', 'agacé', 'insupportable', 'putain', 'merde',
+        '🤬', 'grrr', 'n’importe quoi', 'idiot', 'trahison', 'abusé', 'mal foutu', 'énervement', 'stressé', 'crise'
+      ],
+
+      'calme': [
+        'calme', 'tranquille', 'paix', 'repos', 'détente', 'cool', 'ça va', 'zen', 'reposant', 'silence',
+        'chill', 'relax', 'douceur', 'plénitude', 'concentré', 'paisible', 'équilibre', 'harmonie', 'serein', 'légèreté',
+        '😌', '🤫', 'slow', 'stable', 'sans stress', 'confiant', 'en paix', 'soft', 'repos total', 'moment zen'
+      ],
+
+      'suspens': [
+        'attendre', 'voir', 'peut-être', 'bientôt', 'savoir', 'Ramba', 'quoi', 'mystère', 'surprise', 'deviner',
+        'suspense', 'je sens', 'ça arrive', 'à suivre', 'curieux', 'intrigue', 'mystérieux', '🤔', 'enquête', 'prochainement',
+        'devinons', 'à venir', 'sur le point', 'je me demande', 'pressentir', 'hâte de voir', 'on verra', 'je crois', 'tension', 'préparez-vous'
+      ],
+
+      'enjaillé': [
+        'fête', 'danse', 'musique', 'sortie', 'ambiance', 'wesh', 'enjaillé', 'kiff', 'show', 'soirée',
+        '🔥', '💃', '🥳', 'en mode', 'gros son', 'club', 'ambiançons', 'plaisir', 'style', 'vibes',
+        'afro', 'djo', 'on bouge', 'trop fort', 'crazy', 'good vibes', 'ça chauffe', 'groove', 'démarre', 'plein gaz', 'turn up'
+      ]
     };
+
 
     // Calculer les scores pour chaque émotion
     Object.entries(emotionKeywords).forEach(([emotion, keywords]) => {

@@ -23,7 +23,7 @@ const emotionColors = {
   amour: '#EF476F',
   suspens: '#7209B7',
   calme: '#06D6A0',
-  inclassable: '#BDBDBD'
+  Personalisé: '#BDBDBD'
 };
 
 const emotionEmojis = {
@@ -33,7 +33,7 @@ const emotionEmojis = {
   amour: '❤️',
   suspens: '🤔',
   calme: '😌',
-  inclassable: '🤷'
+  Personalisé: '🤷'
 };
 
 interface InteractiveMapProps {

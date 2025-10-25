@@ -383,7 +383,8 @@ export default function MobileHomePage() {
 
   return (
     <MobileLayout 
-      className="p-0" 
+      className="p-0 pt-0 pb-0" 
+      autoOffset={false}
       showTopButtons={false}
       renderRightExtras={
         <GbairaiFilters 

@@ -115,7 +115,7 @@ export class IvoirianDictionary {
       weight: 0.5
     },
     {
-      name: 'inclassable',
+      name: 'Personalisé',
       triggers: ['autre', 'différent', 'spécial', 'unique', 'personnalisé'],
       nouchExpressions: [
         'c\'est spécial',
@@ -163,7 +163,7 @@ export class IvoirianDictionary {
     results.sort((a, b) => b.confidence - a.confidence);
 
     return results[0] || {
-      emotion: 'inclassable',
+      emotion: 'Personalisé',
       confidence: 0.5,
       matchedTerms: []
     };

@@ -22,7 +22,7 @@ const emotions = [
   { id: "trop fan", label: "Trop Fan", emoji: "❤️", color: "bg-pink-100 border-pink-300" },
   { id: "Mais Ahy?", label: "Mais Ahy?", emoji: "🤔", color: "bg-purple-100 border-purple-300" },
   { id: "Légé", label: "Légé", emoji: "😌", color: "bg-green-100 border-green-300" },
-  { id: "inclassable", label: "Inclassable", emoji: "🎨", color: "bg-orange-100 border-orange-300" },
+  { id: "Personalisé", label: "Personalisé", emoji: "🎨", color: "bg-orange-100 border-orange-300" },
 ];
 
 export function EmotionSelector({
@@ -86,7 +86,7 @@ export function EmotionSelector({
                     ${isSuggested && !isSelected ? 'ring-2 ring-blue-200' : ''}
                   `}
                   onClick={() => {
-                    if (emotion.id === 'inclassable') {
+                    if (emotion.id === 'Personalisé') {
                       setShowCustomEditor(true);
                     } else {
                       onEmotionSelect(emotion.id);
@@ -118,7 +118,7 @@ export function EmotionSelector({
       </div>
 
       {/* Émotion personnalisée sélectionnée */}
-      {selectedEmotion === 'inclassable' && customEmotion && (
+      {selectedEmotion === 'Personalisé' && customEmotion && (
         <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-orange-900 flex items-center gap-2">
@@ -153,7 +153,7 @@ export function EmotionSelector({
         onClose={() => setShowCustomEditor(false)}
         onSave={(emotion, description, emoji) => {
           onCustomEmotion?.(emotion, description, emoji);
-          onEmotionSelect('inclassable');
+          onEmotionSelect('Personalisé');
         }}
       />
     </div>

@@ -358,7 +358,7 @@ export class UserProfileService {
         suspens: 0.4,
         tristesse: 0.3,
         colere: 0.2,
-        inclassable: 0.1
+        Personalisé: 0.1
       };
     }
 

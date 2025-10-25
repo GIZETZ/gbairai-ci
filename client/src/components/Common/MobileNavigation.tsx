@@ -1,8 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { MapPin, MessageSquare, Search, User, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
+import { Button } from "@/components/ui/button";
 
 export function MobileNavigation() {
   const [location] = useLocation();
@@ -81,6 +81,7 @@ export function MobileNavigation() {
             </Link>
           );
         })}
+        {/* Notifications controls moved to Settings */}
       </div>
     </div>
   );

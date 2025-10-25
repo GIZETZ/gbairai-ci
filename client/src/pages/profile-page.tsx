@@ -120,7 +120,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <MobileLayout>
+    <MobileLayout autoOffset={false}>
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
         <div className="space-y-6 p-4 pt-24">
         {/* Profile Header */}
@@ -157,7 +157,7 @@ export default function ProfilePage() {
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-500">{totalComments}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Commentaires</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Les Coms</div>
             </CardContent>
           </Card>
         </div>  

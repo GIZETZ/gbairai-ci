@@ -6,7 +6,7 @@ import { Link } from "wouter";
 
 export default function CreatePage() {
   return (
-    <MobileLayout className="bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
+    <MobileLayout className="bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 pt-24">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center mb-6">

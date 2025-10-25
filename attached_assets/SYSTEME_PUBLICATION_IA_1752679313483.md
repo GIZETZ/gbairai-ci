@@ -250,7 +250,7 @@ Analyse l'émotion principale de ce texte en tenant compte du contexte ivoirien 
 
 "${text}"
 
-Émotions possibles : joie, colère, tristesse, amour, suspens, calme, inclassable
+Émotions possibles : joie, colère, tristesse, amour, suspens, calme, Personalisé
 
 Réponds au format JSON :
 {
@@ -275,10 +275,10 @@ Réponds au format JSON :
 Prends en compte les expressions ivoiriennes typiques :
 - "Même pas fatigue" = confiance, joie
 - "Ça va aller" = espoir, calme
-- "Ça me chauffe" = colère, énervement
-- "J'ai le cœur serré" = tristesse
-- "Mon dja" = amour, affection
-- "Gbagba" = problème, suspens
+- "Ça pète pour moi" = colère, énervement
+- "J'ai goumin" = tristesse
+- "Je suis fan" = amour, affection
+- "Ramba" = problème, suspens
 `;
   }
 
@@ -317,7 +317,7 @@ Prends en compte les expressions ivoiriennes typiques :
     results.sort((a, b) => b.confidence - a.confidence);
 
     const topEmotion = results[0] || {
-      emotion: 'inclassable',
+      emotion: 'Personalisé',
       confidence: 0.5,
       reasoning: 'Aucune émotion claire détectée'
     };
@@ -437,7 +437,7 @@ export class IvoirianDictionary {
       name: 'suspens',
       triggers: ['attendre', 'inquiet', 'mystère', 'surprise', 'tension', 'stress'],
       nouchExpressions: [
-        'gbagba',
+        'Ramba',
         'c\'est louche',
         'ça m\'inquiète',
         'j\'ai peur',

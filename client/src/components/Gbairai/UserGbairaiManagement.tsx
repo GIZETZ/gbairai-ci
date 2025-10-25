@@ -57,9 +57,9 @@ export function UserGbairaiManagement({ gbairais, isLoading }: UserGbairaiManage
       'amour': 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300',
       'goumin': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300',
       'nerveux': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300',
-      'inclassable': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
+      'Personalisé': 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
     };
-    return colors[emotion as keyof typeof colors] || colors.inclassable;
+    return colors[emotion as keyof typeof colors] || colors.Personalisé;
   };
 
   if (isLoading) {

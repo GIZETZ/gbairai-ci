@@ -12,11 +12,11 @@ const emotionConfig = {
   amour: { color: '#EF476F', emoji: '❤️' },
   suspens: { color: '#7209B7', emoji: '🤔' },
   calme: { color: '#06D6A0', emoji: '😌' },
-  inclassable: { color: '#BDBDBD', emoji: '🤷' }
+  Personalisé: { color: '#BDBDBD', emoji: '🤷' }
 };
 
 export function EmotionMarker({ gbairai, onClick }: EmotionMarkerProps) {
-  const emotion = emotionConfig[gbairai.emotion as keyof typeof emotionConfig] || emotionConfig.inclassable;
+  const emotion = emotionConfig[gbairai.emotion as keyof typeof emotionConfig] || emotionConfig.Personalisé;
 
   return (
     <div

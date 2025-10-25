@@ -132,11 +132,10 @@ export function unregister() {
 }
 
 // Demander permission notifications
-export function requestNotificationPermission() {
-  if ('Notification' in window && 'serviceWorker' in navigator) {
-    return Notification.requestPermission();
-  }
-  return Promise.resolve('denied');
+export async function requestNotificationPermission(): Promise<boolean> {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return false;
+  const permission = await Notification.requestPermission();
+  return permission === 'granted';
 }
 
 // Souscrire aux notifications push

@@ -93,7 +93,7 @@ const EMOTION_COLORS = {
   amour: '#EF476F',
   suspens: '#7209B7',
   calme: '#06D6A0',
-  inclassable: '#BDBDBD'
+  personalisé: '#BDBDBD'
 };
 
 interface EmotionMarkerProps {
@@ -102,7 +102,7 @@ interface EmotionMarkerProps {
 }
 
 const EmotionMarker: React.FC<EmotionMarkerProps> = ({ gbairai, onClick }) => {
-  const emotionColor = EMOTION_COLORS[gbairai.emotion] || EMOTION_COLORS.inclassable;
+  const emotionColor = EMOTION_COLORS[gbairai.emotion] || EMOTION_COLORS.Personalisé;
   
   // Icône SVG personnalisée
   const emotionIcon = new DivIcon({

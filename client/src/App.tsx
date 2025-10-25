@@ -65,6 +65,7 @@ import AdminPage from "@/pages/admin-page";
 import NotFound from "@/pages/not-found";
 import PrivacyPolicyPage from "@/pages/privacy-policy-page";
 import AboutPage from "@/pages/about-page";
+import NotificationPromptBanner from "@/components/Common/NotificationPromptBanner";
 
 function Router() {
   return (
@@ -100,6 +101,7 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <Toaster />
+            <NotificationPromptBanner />
             <Router />
           </AuthProvider>
         </TooltipProvider>

@@ -22,7 +22,7 @@ const emotions = [
   { id: 'amour', color: '#EF476F', label: 'Amour' },
   { id: 'suspens', color: '#7209B7', label: 'Suspens' },
   { id: 'calme', color: '#06D6A0', label: 'Calme' },
-  { id: 'inclassable', color: '#BDBDBD', label: 'Inclassable' }
+  { id: 'Personalisé', color: '#BDBDBD', label: 'Personalisé' }
 ];
 
 export function MapControls({

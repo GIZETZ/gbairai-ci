@@ -183,15 +183,6 @@ export default function SearchPage() {
         <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-yellow-300 dark:bg-gray-800 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-text-main dark:text-white">Recherche</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 bg-white/90 border-yellow-300 text-yellow-800 hover:bg-yellow-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
-            >
-              <Filter className="w-4 h-4" />
-              Filtres
-            </Button>
           </div>
 
           {/* Filtres étendus */}

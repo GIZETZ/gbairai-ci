@@ -102,7 +102,7 @@ export function GbairaiForm({ onSuccess }: GbairaiFormProps) {
     try {
       await apiRequest("POST", "/api/gbairais", {
         content: content.trim(),
-        emotion: selectedEmotion === 'inclassable' ? `custom:${customEmotion}` : selectedEmotion,
+        emotion: selectedEmotion === 'Personalisé' ? `custom:${customEmotion}` : selectedEmotion,
         location: {
           latitude: location?.latitude || 7.539989,
           longitude: location?.longitude || -5.54708,
@@ -114,8 +114,8 @@ export function GbairaiForm({ onSuccess }: GbairaiFormProps) {
         metadata: {
           suggestedEmotions,
           userSelected: selectedEmotion !== suggestedEmotions[0]?.emotion,
-          customEmotionDescription: selectedEmotion === 'inclassable' ? customEmotionDescription : undefined,
-          customEmoji: selectedEmotion === 'inclassable' ? customEmoji : undefined,
+          customEmotionDescription: selectedEmotion === 'Personalisé' ? customEmotionDescription : undefined,
+          customEmoji: selectedEmotion === 'Personalisé' ? customEmoji : undefined,
         },
       });
 

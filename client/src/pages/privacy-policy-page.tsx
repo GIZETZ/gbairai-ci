@@ -7,7 +7,7 @@ import { Link } from "wouter";
 
 export default function PrivacyPolicyPage() {
   return (
-    <MobileLayout>
+    <MobileLayout autoOffset={false}>
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-300 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
         <div className="space-y-6 p-4 pt-24 pb-24">
           {/* Header */}
