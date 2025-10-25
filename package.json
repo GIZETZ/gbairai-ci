@@ -4,11 +4,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development tsx --env-file=.env server/index.ts",
+    "dev": "tsx --env-file=.env server/index.ts",
     "build": "npm run build:client && npm run build:server",
     "build:client": "cd client && npm install && npm run build",
     "build:server": "mkdir -p dist && cp -r server dist/ && cp -r shared dist/",
-    "start": "cross-env NODE_ENV=production PORT=10000 tsx --env-file=.env server/index.ts"
+    "start": "tsx server/index.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
