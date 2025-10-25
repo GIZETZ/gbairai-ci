@@ -108,6 +108,16 @@ export const conversationDeletions = pgTable("conversation_deletions", {
   deletedAt: timestamp("deleted_at").defaultNow().notNull(),
 });
 
+// Web Push subscriptions
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }): Record<string, any> => ({
   gbairais: many(gbairais),
@@ -215,6 +225,13 @@ export const conversationDeletionsRelations = relations(conversationDeletions, (
   }),
 }));
 
+export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [pushSubscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -271,6 +288,11 @@ export const insertConversationDeletionSchema = createInsertSchema(conversationD
   deletedAt: true,
 });
 
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -291,6 +313,8 @@ export type Block = typeof blocks.$inferSelect;
 export type InsertBlock = z.infer<typeof insertBlockSchema>;
 export type ConversationDeletion = typeof conversationDeletions.$inferSelect;
 export type InsertConversationDeletion = z.infer<typeof insertConversationDeletionSchema>;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 
 // Extended types for UI
 export type GbairaiWithInteractions = Gbairai & {

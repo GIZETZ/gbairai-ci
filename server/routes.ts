@@ -5,7 +5,8 @@ import { storage } from "./storage";
 import { EmotionAnalysisService } from "./services/emotionAnalysis";
 import { ContentValidationService } from "./services/contentValidation";
 import { moderateContent } from "./services/contentModeration";
-import { insertGbairaiSchema, insertInteractionSchema, insertMessageSchema } from "@shared/schema";
+import { insertGbairaiSchema, insertInteractionSchema, insertMessageSchema, pushSubscriptions } from "@shared/schema";
+import webpush from 'web-push';
 import { z } from "zod";
 import OpenAI from "openai";
 import multer from "multer";
@@ -16,8 +17,8 @@ import { healthCheck } from './health';
 import { EmailValidationService } from "./services/emailValidation";
 import { emailService } from "./services/emailService";
 import { db, pool } from "./db";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { gbairais, users } from "@shared/schema";
-import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
 // Middleware pour vérifier l'authentification
@@ -41,6 +42,20 @@ declare global {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Web Push configuration
+  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT) {
+    try {
+      webpush.setVapidDetails(
+        process.env.VAPID_SUBJECT,
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+      );
+    } catch (e) {
+      console.error('Erreur configuration VAPID:', e);
+    }
+  } else {
+    console.warn('VAPID non configuré. Définissez VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY et VAPID_SUBJECT dans .env');
+  }
   // Configuration de l'authentification
   setupAuth(app);
 
@@ -63,6 +78,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const ext = path.extname(file.originalname);
       cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+    }
+  });
+
+  // --- Web Push: désabonnement d'un endpoint ---
+  app.delete('/api/push/unsubscribe', requireAuth, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      const { endpoint } = req.body || {};
+      if (!userId) return res.status(401).json({ error: 'Auth requise' });
+      if (!endpoint) return res.status(400).json({ error: 'Endpoint requis' });
+      await db
+        .delete(pushSubscriptions)
+        .where(and(eq(pushSubscriptions.userId, userId), eq(pushSubscriptions.endpoint, endpoint)));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erreur unsubscribe push:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
+  async function sendPushToUsers(userIds: number[], payload: any) {
+    if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) return;
+    if (!userIds?.length) return;
+    try {
+      const subs = await db
+        .select()
+        .from(pushSubscriptions)
+        .where(inArray(pushSubscriptions.userId, userIds));
+      const body = JSON.stringify(payload);
+      for (const s of subs) {
+        try {
+          await webpush.sendNotification({
+            endpoint: s.endpoint,
+            expirationTime: null,
+            keys: { p256dh: s.p256dh, auth: s.auth }
+          } as any, body);
+        } catch (err: any) {
+          const code = err?.statusCode || err?.code;
+          if (code === 404 || code === 410) {
+            try {
+              await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, s.endpoint));
+            } catch {}
+          } else {
+            console.warn('Erreur envoi push (non bloquante):', code);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('sendPushToUsers échoué (ignoré):', e);
+    }
+  }
+
+  // --- Web Push: enregistrer une subscription ---
+  app.post('/api/push/subscribe', requireAuth, async (req, res) => {
+    try {
+      const sub = req.body;
+      if (!sub || !sub.endpoint || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) {
+        return res.status(400).json({ error: 'Subscription invalide' });
+      }
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: 'Auth requise' });
+
+      // Upsert par endpoint
+      await db
+        .insert(pushSubscriptions)
+        .values({
+          userId,
+          endpoint: sub.endpoint,
+          p256dh: sub.keys.p256dh,
+          auth: sub.keys.auth,
+        })
+        .onConflictDoUpdate({
+          target: pushSubscriptions.endpoint,
+          set: {
+            userId,
+            p256dh: sub.keys.p256dh,
+            auth: sub.keys.auth,
+          }
+        });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erreur enregistrement subscription push:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  });
+
+  // --- Web Push: envoi de test à l'utilisateur courant ---
+  app.post('/api/push/test', requireAuth, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: 'Auth requise' });
+      if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+        return res.status(500).json({ error: 'VAPID non configuré' });
+      }
+
+      const subs = await db
+        .select()
+        .from(pushSubscriptions)
+        .where(eq(pushSubscriptions.userId, userId));
+
+      if (!subs.length) return res.status(404).json({ error: 'Aucune subscription' });
+
+      const payload = JSON.stringify({
+        title: 'Gbairai',
+        body: 'Test de notification push',
+        url: '/notifications'
+      });
+
+      const results: any[] = [];
+      for (const s of subs) {
+        try {
+          await webpush.sendNotification({
+            endpoint: s.endpoint,
+            expirationTime: null,
+            keys: { p256dh: s.p256dh, auth: s.auth }
+          } as any, payload);
+          results.push({ endpoint: s.endpoint, ok: true });
+        } catch (err) {
+          console.error('Erreur envoi push:', err);
+          results.push({ endpoint: s.endpoint, ok: false });
+        }
+      }
+
+      res.json({ success: true, results });
+    } catch (error) {
+      console.error('Erreur push test:', error);
+      res.status(500).json({ error: 'Erreur serveur' });
     }
   });
 
@@ -267,6 +410,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           req.user?.id // Exclure l'auteur
         );
         console.log(`Notifications envoyées pour le gbairai ${gbairai.id}`);
+        // Push best-effort: envoyer à tous les utilisateurs sauf l'auteur
+        const recipients = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(ne(users.id, req.user?.id || 0));
+        await sendPushToUsers(
+          recipients.map(r => r.id),
+          {
+            title: 'Nouveau Gbairai',
+            body: notificationMessage,
+            url: `/gbairai/${gbairai.id}`
+          }
+        );
       } catch (error) {
         console.error('Erreur envoi notifications:', error);
         // Ne pas faire échouer la création du gbairai si les notifications échouent
@@ -368,6 +524,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
             req.user?.id,
             gbairaiId
           );
+          // Push best-effort vers propriétaire du Gbairai
+          await sendPushToUsers([gbairai.userId], {
+            title: type === 'comment' ? 'Nouveau commentaire' : type === 'like' ? 'Nouveau like' : 'Nouveau partage',
+            body: notificationMessage,
+            url: `/gbairai/${gbairaiId}`
+          });
+        }
+      }
+
+      // Réponses aux commentaires
+      if (type === 'comment' && req.body.parentCommentId) {
+        const parentComment = await storage.getUser(req.body.parentCommentId);
+        if (parentComment) {
+          const parentCommentUser = await storage.getUser(parentComment.userId);
+          if (parentCommentUser) {
+            const replierName = req.user?.username || 'Un utilisateur';
+            const notificationMessage = `${replierName} a répondu à votre commentaire`;
+            await storage.createNotification(
+              parentCommentUser.id,
+              'reply',
+              notificationMessage,
+              req.user?.id,
+              gbairaiId
+            );
+            // Push best-effort vers l'auteur du commentaire parent
+            await sendPushToUsers([parentCommentUser.id], {
+              title: 'Nouvelle réponse',
+              body: notificationMessage,
+              url: `/gbairai/${gbairaiId}`
+            });
+          }
         }
       }
 
@@ -1468,6 +1655,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type,
         replyToId
       });
+
+      // Push best-effort vers les autres participants de la conversation
+      try {
+        const otherRecipients = (participants || []).filter(id => id !== userId);
+        if (otherRecipients.length) {
+          await sendPushToUsers(otherRecipients, {
+            title: 'Nouveau message',
+            body: content.trim(),
+            url: `/chat/${conversationId}`
+          });
+        }
+      } catch (e) {
+        console.warn('Push message ignoré:', e);
+      }
 
       res.status(201).json(newMessage);
     } catch (error) {

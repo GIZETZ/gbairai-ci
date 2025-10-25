@@ -12,6 +12,33 @@ interface Config {
   onUpdate?: (registration: ServiceWorkerRegistration) => void;
 }
 
+// Se désabonner des notifications push
+export async function unsubscribeFromPush() {
+  if (!('serviceWorker' in navigator)) return false;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const sub = await registration.pushManager.getSubscription();
+    if (sub) {
+      try {
+        await fetch('/api/push/unsubscribe', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ endpoint: sub.endpoint })
+        });
+      } catch (e) {
+        console.warn('Erreur suppression serveur subscription (ignorée):', e);
+      }
+      const ok = await sub.unsubscribe();
+      return ok;
+    }
+    return true;
+  } catch (e) {
+    console.error('Erreur désinscription push:', e);
+    return false;
+  }
+}
+
 export function register(config?: Config) {
   if ('serviceWorker' in navigator) {
     const publicUrl = new URL(
@@ -120,8 +147,15 @@ export async function subscribeToPushNotifications() {
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
-          'YOUR_VAPID_PUBLIC_KEY_HERE' // À remplacer par votre clé VAPID
+          import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
         )
+      });
+      // Envoyer au serveur
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(subscription)
       });
       return subscription;
     } catch (error) {

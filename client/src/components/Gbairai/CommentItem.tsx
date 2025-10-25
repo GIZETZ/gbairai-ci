@@ -81,18 +81,12 @@ export function CommentItem({
         </div>
 
         {/* Actions sous le commentaire */}
-        <div className="flex items-center gap-6 text-sm text-gray-400">
+        <div className="flex items-center gap-6 text-sm text-gray-600">
           <button
             onClick={() => onReplyToComment(comment.id, comment.user?.username || 'Utilisateur')}
-            className="hover:text-white focus:outline-none"
+            className="hover:text-gray-900 focus:outline-none"
           >
             Répondre
-          </button>
-          <button
-            onClick={onTranslateComment}
-            className="hover:text-white focus:outline-none"
-          >
-            Voir la traduction
           </button>
         </div>
       </div>

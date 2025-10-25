@@ -48,6 +48,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip cross-origin requests entirely (let the browser handle them)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   // API requests - network first
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(handleApiRequest(request));
@@ -66,13 +71,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Default handling
-  event.respondWith(
-    caches.match(request)
-      .then((response) => {
-        return response || fetch(request);
-      })
-  );
+  // Default handling with error guard
+  event.respondWith((async () => {
+    try {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      return await fetch(request);
+    } catch (err) {
+      // Return a generic offline response to avoid unhandled promise rejection
+      return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+    }
+  })());
 });
 
 // Handle API requests
