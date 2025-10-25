@@ -721,6 +721,19 @@ export function GbairaiCardMobile({
           box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
           overflow: hidden !important;
         }
+        /* Top-centered logo */
+        .share-capture .brand-logo {
+          position: absolute !important;
+          top: 16px !important;
+          left: 59% !important; /* slight nudge to the right */
+          transform: translateX(-50%) !important;
+          width: 90px !important; /* bigger logo */
+          height: auto !important;
+          opacity: 0.95 !important;
+          filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+          pointer-events: none !important;
+          user-select: none !important;
+        }
         /* Global colors */
         .share-capture * { color: #ffffff !important; }
         .share-capture .text-gray-900, .share-capture .dark\\:text-white, .share-capture .text-white { color: #ffffff !important; }
@@ -762,6 +775,13 @@ export function GbairaiCardMobile({
         }
       `;
       document.head.appendChild(styleEl);
+
+      // Ajouter le logo centré en haut pour la capture
+      const logoEl = document.createElement('img');
+      logoEl.src = '/LogoSend.png';
+      logoEl.alt = 'Gbairai Logo';
+      logoEl.className = 'brand-logo';
+      tempCard.appendChild(logoEl);
 
       // Ajouter la copie temporaire au DOM (invisible)
       tempCard.style.position = 'absolute';

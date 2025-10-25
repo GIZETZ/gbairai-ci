@@ -62,7 +62,6 @@ export function MobileLayout({ children, className, showTopButtons = true, rende
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground">Gbairai</h1>
-            <p className="text-sm text-muted-foreground">Racont' ton Gbairai, on t'écoute sans te voir.</p>
             {renderBelowSubtitle && (
               <div className="mt-2 flex justify-center">
                 {renderBelowSubtitle}

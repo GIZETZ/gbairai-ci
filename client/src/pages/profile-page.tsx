@@ -309,30 +309,6 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-700 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">Informations du compte</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Nom d'utilisateur</span>
-                    <p className="font-medium text-gray-900 dark:text-white">{user.username}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Email</span>
-                    <p className="font-medium text-gray-900 dark:text-white">{user.email}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Membre depuis</span>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {formatDistanceToNow(new Date(user.createdAt || new Date()), { locale: fr })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Liens légaux et informations */}
             <div className="pb-2">
               <Card className="bg-white/90 dark:bg-gray-800/90 border-gray-300 dark:border-gray-700 backdrop-blur-sm mb-64">

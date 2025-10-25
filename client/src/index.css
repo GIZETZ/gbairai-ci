@@ -1371,6 +1371,119 @@ body {
   }
 }
 
+/* Scoped Uiverse button for mobile create action */
+.mobile-create .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 30px;
+  border: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10rem;
+  transition: all 0.02s;
+  font-weight: bold;
+  cursor: pointer;
+  color: rgb(37, 37, 37);
+  z-index: 0;
+  box-shadow: 0 0px 7px -5px rgba(0, 0, 0, 0.5);
+  background: white;
+}
+
+.dark .mobile-create .button {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.mobile-create .button:hover {
+  background: rgb(193, 228, 248);
+  color: rgb(33, 0, 85);
+}
+
+.mobile-create .button:active {
+  transform: scale(0.97);
+}
+
+.mobile-create .hoverEffect {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.mobile-create .hoverEffect div {
+  /* Yellow → Blue gradient */
+  background: linear-gradient(90deg, #fbbf24 0%, #60a5fa 100%);
+  border-radius: 40rem;
+  width: 10rem;
+  height: 10rem;
+  transition: 0.4s;
+  filter: blur(20px);
+  animation: effect 3s linear infinite;
+  opacity: 0.5;
+}
+
+.mobile-create .button:hover .hoverEffect div {
+  width: 8rem;
+  height: 8rem;
+}
+
+@keyframes effect {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- Theme-aware overrides for comments pages (respect light/dark) --- */
+/* Container backgrounds + borders */
+.comments-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.comments-card,
+.comments-container,
+.comment-form,
+.comment-item,
+.reply-item {
+  background: rgb(var(--card));
+  color: rgb(var(--card-foreground));
+  border-color: rgb(var(--border));
+}
+
+.comments-card .comments-header,
+.comment-form-header,
+.add-comment-section {
+  background: rgb(var(--card));
+  border-color: rgb(var(--border));
+}
+
+/* Text tones */
+.comment-author,
+.reply-time,
+.comment-char-count {
+  color: rgb(var(--text-secondary));
+}
+
+.comment-input,
+.comment-input::placeholder {
+  color: rgb(var(--foreground));
+}
+
+/* Buttons in comment areas */
+.send-btn,
+.add-comment-btn-fixed {
+  background: rgb(59, 130, 246);
+  color: white;
+}
+.send-btn:hover:not(:disabled),
+.add-comment-btn-fixed:hover {
+  background: rgb(37, 99, 235);
+}
+
 /* Animation pour le menu contextuel */
 @keyframes fadeIn {
   from {

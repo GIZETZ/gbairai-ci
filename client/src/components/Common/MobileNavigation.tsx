@@ -52,6 +52,18 @@ export function MobileNavigation() {
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
+          if (item.isCreate) {
+            return (
+              <Link key={item.href} href={item.href}>
+                <div className="px-1 py-1 mobile-create">
+                  <div className="button" role="button" aria-label="Créer un Gbairai">
+                    Gbairai
+                    <div className="hoverEffect"><div></div></div>
+                  </div>
+                </div>
+              </Link>
+            );
+          }
           return (
             <Link key={item.href} href={item.href}>
               <Button
@@ -59,18 +71,12 @@ export function MobileNavigation() {
                 size="sm"
                 className={cn(
                   "flex flex-col items-center gap-1 h-auto py-2 px-3 transition-colors",
-                  item.isCreate && "bg-blue-500 text-white hover:bg-blue-600 rounded-full",
-                  item.active && !item.isCreate && "text-blue-500",
-                  !item.active && !item.isCreate && (theme === "light" ? "text-gray-600" : "text-gray-300")
+                  item.active && "text-blue-500",
+                  !item.active && (theme === "light" ? "text-gray-600" : "text-gray-300")
                 )}
               >
-                <Icon className={cn("w-5 h-5", item.isCreate && "text-white")} />
-                <span className={cn(
-                  "text-xs font-medium",
-                  item.isCreate && "text-white"
-                )}>
-                  {item.label}
-                </span>
+                <Icon className="w-5 h-5" />
+                <span className="text-xs font-medium">{item.label}</span>
               </Button>
             </Link>
           );
