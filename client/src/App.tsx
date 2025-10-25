@@ -72,7 +72,7 @@ function Router() {
       <Route path="/" component={MobileHomePage} />
       <ProtectedRoute path="/create" component={CreatePage} />
       <ProtectedRoute path="/map" component={MapPage} />
-      <ProtectedRoute path="/feed" component={FeedPage} />
+      <Route path="/feed" component={FeedPage} />
       <ProtectedRoute path="/search" component={SearchPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <ProtectedRoute path="/profile/:userId" component={UserProfilePage} />
@@ -80,7 +80,7 @@ function Router() {
       <ProtectedRoute path="/messages/:id" component={ConversationPage} />
       <ProtectedRoute path="/blocked-users" component={BlockedUsersPage} />
       <ProtectedRoute path="/notifications" component={NotificationsPage} />
-      <ProtectedRoute path="/gbairai/:id" component={GbairaiPage} />
+      <Route path="/gbairai/:id" component={GbairaiPage} />
       <ProtectedRoute path="/gbairai/:id/comments" component={GbairaiCommentsPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
       <ProtectedRoute path="/moderation-test" component={ModerationTestPage} />

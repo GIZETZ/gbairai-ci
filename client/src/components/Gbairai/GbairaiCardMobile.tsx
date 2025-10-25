@@ -734,6 +734,22 @@ export function GbairaiCardMobile({
           pointer-events: none !important;
           user-select: none !important;
         }
+        /* Emotion line under logo for capture */
+        .share-capture .brand-emotion {
+          position: absolute !important;
+          top: calc(16px + 30px + 8px) !important; /* below logo */
+          left: 66% !important;
+          transform: translateX(-50%) !important;
+          font-size: 20px !important;
+          font-weight: 700 !important;
+          line-height: 1.2 !important;
+          letter-spacing: -0.01em !important;
+          text-align: center !important;
+          color: #ffffff !important;
+          pointer-events: none !important;
+          user-select: none !important;
+          white-space: nowrap !important;
+        }
         /* Global colors */
         .share-capture * { color: #ffffff !important; }
         .share-capture .text-gray-900, .share-capture .dark\\:text-white, .share-capture .text-white { color: #ffffff !important; }
@@ -782,6 +798,12 @@ export function GbairaiCardMobile({
       logoEl.alt = 'Gbairai Logo';
       logoEl.className = 'brand-logo';
       tempCard.appendChild(logoEl);
+
+      // Ajouter l'émotion (emoji + label) sous le logo pour la capture
+      const emotionEl = document.createElement('div');
+      emotionEl.className = 'brand-emotion';
+      emotionEl.textContent = `${emotion.emoji} ${emotion.label}`;
+      tempCard.appendChild(emotionEl);
 
       // Ajouter la copie temporaire au DOM (invisible)
       tempCard.style.position = 'absolute';
